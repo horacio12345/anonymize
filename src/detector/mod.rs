@@ -3,7 +3,6 @@
 mod email;
 pub use email::EmailDetector;
 
-
 /// Byte span in the original text
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Span {
