@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 thiserror = "2.0.17"
 unicode-normalization = "0.1.25"
+regex = "1.12.2"
