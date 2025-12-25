@@ -194,6 +194,11 @@ pub enum Category {
     ClientName,
     // User-defined
     Custom(String),
+    // Document metadata
+    DocumentNumber,
+    RevisedBy,
+    ApprovedBy,
+    DesignedBy,
 }
 ```
 
@@ -205,7 +210,8 @@ pub enum Category {
 |----------|---------|------------|------------|
 | Email | RFC 5322 simplified regex | MX lookup disabled (formal only) | PatternOnly |
 | IBAN | `[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}` | ISO 7064 Mod 97-10 | Verified if checksum valid |
-| DNI/NIE (ES) | `[0-9XYZ][0-9]{7}[A-Z]` | Letter checksum | Verified if checksum valid |
+| DNI (ES) | `[0-9]{8}[A-Z]` | Letter checksum | Verified if checksum valid |
+| NIE (ES) | `[XYZ][0-9]{7}[A-Z]` | Letter checksum | Verified if checksum valid |
 | SSN (US) | `[0-9]{3}-[0-9]{2}-[0-9]{4}` | Format only | PatternOnly |
 | Credit Card | `[0-9]{13,19}` with separators | Luhn algorithm | Verified if checksum valid |
 | Phone (ES) | `(\+34)?[679][0-9]{8}` | Format only | PatternOnly |
@@ -460,7 +466,7 @@ as the original document.
 #### Configuration File Format
 
 ```toml
-# anonymyze.toml
+# anonymize.toml
 
 [general]
 # Fail on any error vs. best-effort processing
@@ -531,8 +537,8 @@ enabled = true
 #### Configuration Loading Priority
 
 1. Explicit path passed to API/CLI
-2. `./anonymyze.toml`
-3. `~/.config/anonymyze/config.toml`
+2. `./anonymize.toml`
+3. `~/.config/anonymize/config.toml`
 4. Built-in defaults
 
 Later sources override earlier ones at the field level (not full replacement).
@@ -543,7 +549,7 @@ Later sources override earlier ones at the field level (not full replacement).
 
 ```rust
 #[derive(Debug, thiserror::Error)]
-pub enum AnonymyzeError {
+pub enum AnonymizeError {
     #[error("Invalid UTF-8 at byte position {position}")]
     InvalidUtf8 { position: usize },
     
@@ -560,7 +566,7 @@ pub enum AnonymyzeError {
     Io(#[from] std::io::Error),
 }
 
-pub type Result<T> = std::result::Result<T, AnonymyzeError>;
+pub type Result<T> = std::result::Result<T, AnonymizeError>;
 ```
 
 ### Error Philosophy
@@ -632,22 +638,22 @@ impl Anonymizer {
 
 ```bash
 # Basic usage
-anonymyze input.txt -o output.txt
+anonymize input.txt -o output.txt
 
 # With audit report
-anonymyze input.txt -o output.txt --report report.json
+anonymize input.txt -o output.txt --report report.json
 
 # Custom config
-anonymyze input.txt -c custom-config.toml -o output.txt
+anonymize input.txt -c custom-config.toml -o output.txt
 
 # Stdin/stdout
-cat document.txt | anonymyze > anonymized.txt
+cat document.txt | anonymize > anonymized.txt
 
 # Batch processing
-anonymyze --batch ./documents/ --output-dir ./anonymized/
+anonymize --batch ./documents/ --output-dir ./anonymized/
 
 # Verify (check hash)
-anonymyze --verify output.txt --hash <expected-hash>
+anonymize --verify output.txt --hash <expected-hash>
 ```
 
 ## Security Model
@@ -741,10 +747,16 @@ fn test_overlapping_matches_resolved() {
 [A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}
 ```
 
-### Spanish DNI/NIE
+### Spanish DNI
 
 ```regex
-[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]
+[0-9]{8}[A-Z]
+```
+
+### Spanish NIE
+
+```regex
+[XYZ][0-9]{7}[A-Z]
 ```
 
 ### Credit Card (with optional separators)

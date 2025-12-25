@@ -3,19 +3,20 @@
 //! # anonymize
 //!
 //! Deterministic text anonymization engine.
-//!
-//! This library provides formal, rule-based anonymization of sensitive data
-//! in text documents. No AI, no heuristics, no guessing.
 
-// Declare modules
 mod error;
 mod normalizer;
 mod detector;
+mod conflict_resolver;
+mod replacement_engine;
+mod audit_report;
+mod engine;
+pub mod utils;
 
-// Re-export public API
 pub use error::AnonymizeError;
 pub use normalizer::{normalize, NormalizedText};
-pub use detector::{Detector, CandidateMatch, Category, Span, EmailDetector};
+pub use detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult, EmailDetector};
+pub use engine::{Anonymizer, AnonymizationOutput};
+pub use audit_report::AuditReport;
 
-// Custom Result type for this crate
 pub type Result<T> = std::result::Result<T, AnonymizeError>;

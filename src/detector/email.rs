@@ -1,7 +1,7 @@
 // src/detector/email.rs
 
 use regex::Regex;
-use crate::detector::{Detector, CandidateMatch, Category, Span};
+use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
 /// Detector for email addresses
 pub struct EmailDetector {
@@ -19,8 +19,8 @@ impl EmailDetector {
 }
 
 impl Detector for EmailDetector {
-    fn id(&self) -> &str {
-        "email"
+    fn id(&self) -> DetectorId {
+        "email".to_string()
     }
     
     fn category(&self) -> Category {
@@ -35,9 +35,21 @@ impl Detector for EmailDetector {
                     start: m.start(),
                     end: m.end(),
                 },
-                value: m.as_str().to_string(),
+                detector_id: self.id(),
                 category: Category::Email,
+                priority: self.priority(),
+                confidence: Confidence::PatternOnly,
+                raw_value: m.as_str().to_string(),
+                normalized_value: None,
             })
             .collect()
+    }
+
+    fn validate(&self, _candidate: &str) -> ValidationResult {
+        ValidationResult::NotApplicable
+    }
+
+    fn priority(&self) -> u32 {
+        50
     }
 }
