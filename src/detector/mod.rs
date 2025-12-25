@@ -1,11 +1,19 @@
 // src/detector/mod.rs
 
 mod email;
+mod phone;
+mod dni;
+
 pub use email::EmailDetector;
+pub use phone::PhoneDetector;
+pub use dni::DniDetector;
+
+
 use serde::{Serialize, Deserialize};
 
 /// Unique identifier for a detector
 pub type DetectorId = String;
+
 
 /// Byte span in the original text
 #[derive(Debug, Clone, PartialEq, Eq, Copy, Serialize, Deserialize)]

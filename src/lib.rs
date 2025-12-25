@@ -15,7 +15,7 @@ pub mod utils;
 
 pub use error::AnonymizeError;
 pub use normalizer::{normalize, NormalizedText};
-pub use detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult, EmailDetector};
+pub use detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult, EmailDetector, PhoneDetector, DniDetector};
 pub use engine::{Anonymizer, AnonymizationOutput};
 pub use audit_report::AuditReport;
 

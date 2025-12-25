@@ -1,6 +1,6 @@
 // src/main.rs
 
-use anonymize::{Anonymizer, EmailDetector, Result};
+use anonymize::{Anonymizer, EmailDetector, PhoneDetector, DniDetector, Result};
 use std::io::{self, Read};
 
 fn main() -> Result<()> {
@@ -9,6 +9,8 @@ fn main() -> Result<()> {
 
     let mut engine = Anonymizer::new();
     engine.add_detector(Box::new(EmailDetector::new()));
+    engine.add_detector(Box::new(PhoneDetector::new())); 
+    engine.add_detector(Box::new(DniDetector::new()));
 
     let output = engine.anonymize(&input)?;
 
