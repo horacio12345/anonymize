@@ -47,12 +47,37 @@ pub fn validate_dni(dni: &str) -> bool {
         return false;
     }
     
-    let number: u32 = chars[..8].iter()
-        .collect::<String>()
-        .parse()
-        .unwrap_or(0);
+    // Extraer la parte numérica
+    let number_str: String = if chars[0].is_ascii_digit() {
+        // DNI: primeros 8 caracteres son dígitos
+        chars[..8].iter().collect()
+    } else {
+        // NIE: convertir letra inicial (X=0, Y=1, Z=2) + 7 dígitos
+        let first_char = chars[0].to_ascii_uppercase();
+        let prefix = match first_char {
+            'X' => '0',
+            'Y' => '1',
+            'Z' => '2',
+            _ => return false, // Letra inicial inválida
+        };
+        
+        // Construir número: prefix + 7 dígitos siguientes
+        let mut num = String::new();
+        num.push(prefix);
+        num.push_str(&chars[1..8].iter().collect::<String>());
+        num
+    };
     
+    // Parsear a número
+    let number: u32 = match number_str.parse() {
+        Ok(n) => n,
+        Err(_) => return false,
+    };
+    
+    // Calcular letra esperada
     let expected_letter = LETTERS[(number % 23) as usize];
+    
+    // Comparar con la letra real
     chars[8].to_ascii_uppercase() == expected_letter
 }
 

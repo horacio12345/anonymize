@@ -15,7 +15,12 @@ pub mod utils;
 
 pub use error::AnonymizeError;
 pub use normalizer::{normalize, NormalizedText};
-pub use detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult, EmailDetector, PhoneDetector, DniDetector};
+pub use detector::{
+    Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult,
+    EmailDetector, PhoneDetector, DniDetector, IbanDetector, CreditCardDetector,
+    SsnDetector, ProjectCodeDetector, ContractNumberDetector, WorkOrderDetector,
+    PurchaseOrderDetector, SerialNumberDetector, CostCenterDetector,
+};
 pub use engine::{Anonymizer, AnonymizationOutput};
 pub use audit_report::AuditReport;
 

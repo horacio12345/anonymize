@@ -3,11 +3,28 @@
 mod email;
 mod phone;
 mod dni;
+mod iban;
+mod credit_card;
+mod ssn;
+mod project_code;
+mod contract_number;
+mod work_order;
+mod purchase_order;
+mod serial_number;
+mod cost_center;
 
 pub use email::EmailDetector;
 pub use phone::PhoneDetector;
 pub use dni::DniDetector;
-
+pub use iban::IbanDetector;
+pub use credit_card::CreditCardDetector;
+pub use ssn::SsnDetector;
+pub use project_code::ProjectCodeDetector;
+pub use contract_number::ContractNumberDetector;
+pub use work_order::WorkOrderDetector;
+pub use purchase_order::PurchaseOrderDetector;
+pub use serial_number::SerialNumberDetector;
+pub use cost_center::CostCenterDetector;
 
 use serde::{Serialize, Deserialize};
 
