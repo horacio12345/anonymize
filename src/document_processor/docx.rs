@@ -3,6 +3,7 @@
 use crate::{Anonymizer, Result, AnonymizeError};
 use super::ProcessedDocument;
 use docx_rs::*;
+use std::io::Cursor;
 
 /// Procesar archivo DOCX
 pub fn process_docx(
@@ -10,23 +11,39 @@ pub fn process_docx(
     original_filename: &str,
     anonymizer: &Anonymizer,
 ) -> Result<ProcessedDocument> {
-    let docx = read_docx(file_bytes)?;
+    // Leer documento DOCX (API actualizada: acepta &[u8] directamente)
+    let docx = read_docx(file_bytes)
+        .map_err(|e| AnonymizeError::ConfigError {
+            message: format!("Error al leer DOCX: {}", e),
+        })?;
+
+    // Extraer todo el texto del documento
     let text = extract_text_from_docx(&docx);
+
+    // Anonimizar texto con el motor existente
     let output = anonymizer.anonymize(&text)?;
+
+    // Crear nuevo documento con texto anonimizado
     let new_docx = create_anonymized_docx(&output.text);
 
-    // FIX: Usar Cursor para implementar Seek
+    // Serializar a bytes (pack necesita Write + Seek)
     let mut buffer = Vec::new();
     let mut cursor = Cursor::new(&mut buffer);
     
     new_docx
         .build()
-        .pack(&mut cursor)?;
+        .pack(&mut cursor)
+        .map_err(|e| AnonymizeError::ConfigError {
+            message: format!("Error al crear DOCX: {}", e),
+        })?;
+
+    // Generar nombre de archivo
+    let new_filename = generate_output_filename(original_filename);
 
     Ok(ProcessedDocument {
-        content: buffer,  // El Vec tiene los datos escritos por Cursor
+        content: buffer,
         content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document".to_string(),
-        filename: generate_output_filename(original_filename),
+        filename: new_filename,
     })
 }
 
