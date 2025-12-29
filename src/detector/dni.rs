@@ -4,21 +4,16 @@ use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 use crate::utils::checksum::validate_dni;
 
-/// Detector for Spanish DNI and NIE (National ID)
 pub struct DniDetector {
     dni_regex: Regex,
     nie_regex: Regex,
 }
 
 impl DniDetector {
-    /// Create a new DNI/NIE detector
     pub fn new() -> Self {
         Self {
-            // DNI: 8 dígitos + 1 letra (ej: 12345678Z)
             dni_regex: Regex::new(r"\b[0-9]{8}[A-Z]\b")
                 .expect("BUG: DNI regex is invalid"),
-            
-            // NIE: [XYZ] + 7 dígitos + 1 letra (ej: X1234567L)
             nie_regex: Regex::new(r"\b[XYZ][0-9]{7}[A-Z]\b")
                 .expect("BUG: NIE regex is invalid"),
         }
@@ -37,16 +32,13 @@ impl Detector for DniDetector {
     fn detect(&self, text: &str) -> Vec<CandidateMatch> {
         let mut matches = Vec::new();
         
-        // Detectar DNIs
         for m in self.dni_regex.find_iter(text) {
             let raw = m.as_str();
             let validation = self.validate(raw);
             
-            // Solo añadimos el match si la validación pasa o no es aplicable
-            // (en este caso, siempre validamos, así que solo añadimos si es válido)
             let confidence = match validation {
                 ValidationResult::Valid => Confidence::Verified,
-                ValidationResult::Invalid => continue, // No añadimos matches inválidos
+                ValidationResult::Invalid => continue,
                 ValidationResult::NotApplicable => Confidence::PatternOnly,
             };
             
@@ -64,7 +56,6 @@ impl Detector for DniDetector {
             });
         }
         
-        // Detectar NIEs
         for m in self.nie_regex.find_iter(text) {
             let raw = m.as_str();
             let validation = self.validate(raw);
@@ -93,7 +84,6 @@ impl Detector for DniDetector {
     }
 
     fn validate(&self, candidate: &str) -> ValidationResult {
-        // Usamos la función de checksum que ya existe en utils
         if validate_dni(candidate) {
             ValidationResult::Valid
         } else {
@@ -102,11 +92,10 @@ impl Detector for DniDetector {
     }
 
     fn priority(&self) -> u32 {
-        100 // Mayor que email/phone para evitar falsos positivos
+        100
     }
 }
 
-/// Normaliza un DNI/NIE (solo letras mayúsculas)
 fn normalize_dni(dni: &str) -> String {
     dni.to_uppercase()
 }

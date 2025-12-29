@@ -30,7 +30,7 @@ pub struct ReplacementRecord {
     pub detector_id: String,
     pub confidence: String,
     pub original_span: Span,
-    pub original_value: Option<String>, // Añadido para usar 'original' de Replacement
+    pub original_value: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

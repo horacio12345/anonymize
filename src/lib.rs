@@ -12,6 +12,8 @@ mod replacement_engine;
 mod audit_report;
 mod engine;
 pub mod utils;
+pub mod web;
+pub mod document_processor; // Nuevo: procesamiento de documentos
 
 pub use error::AnonymizeError;
 pub use normalizer::{normalize, NormalizedText};

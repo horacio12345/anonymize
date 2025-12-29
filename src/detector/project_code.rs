@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for project codes
 pub struct ProjectCodeDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct ProjectCodeDetector {
 impl ProjectCodeDetector {
     pub fn new() -> Self {
         Self {
-            // Formatos: PRJ-XXXX-XXX, P-XXXX, XXX-XXXX
             regex: Regex::new(r"\b(?:PRJ|PROY|P)-[0-9]{4}(?:-[0-9]{3,4})?\b")
                 .expect("BUG: Project code regex is invalid"),
         }

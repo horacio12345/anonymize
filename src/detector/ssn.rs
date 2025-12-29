@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for US Social Security Number
 pub struct SsnDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct SsnDetector {
 impl SsnDetector {
     pub fn new() -> Self {
         Self {
-            // SSN: XXX-XX-XXXX
             regex: Regex::new(r"\b[0-9]{3}-[0-9]{2}-[0-9]{4}\b")
                 .expect("BUG: SSN regex is invalid"),
         }

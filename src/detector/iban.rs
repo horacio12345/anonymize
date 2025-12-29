@@ -4,7 +4,6 @@ use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 use crate::utils::checksum::validate_iban;
 
-/// Detector for IBAN (International Bank Account Number)
 pub struct IbanDetector {
     regex: Regex,
 }
@@ -12,8 +11,6 @@ pub struct IbanDetector {
 impl IbanDetector {
     pub fn new() -> Self {
         Self {
-            // IBAN: 2 letras (país) + 2 dígitos (checksum) + 15-30 alfanuméricos
-            // Permite espacios y guiones opcionales en cualquier posición
             regex: Regex::new(r"\b[A-Z]{2}[0-9]{2}[A-Z0-9\s-]{15,30}\b")
                 .expect("BUG: IBAN regex is invalid"),
         }
@@ -36,7 +33,6 @@ impl Detector for IbanDetector {
                 let raw = m.as_str();
                 let validation = self.validate(raw);
                 
-                // Solo aceptamos IBANs válidos
                 if validation == ValidationResult::Valid {
                     Some(CandidateMatch {
                         span: Span {

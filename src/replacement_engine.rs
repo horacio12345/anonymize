@@ -29,10 +29,6 @@ impl ReplacementEngine {
         let mut replacements = Vec::new();
         let mut category_counters: HashMap<Category, usize> = HashMap::new();
         
-        // Matches are assumed to be sorted and non-overlapping from ConflictResolver.
-        // We need to apply replacements in REVERSE order to not invalidate yet-to-be-processed offsets.
-        // But first, we calculate all placeholders.
-        
         let mut sorted_matches = matches;
         sorted_matches.sort_by_key(|m| m.span.start);
         

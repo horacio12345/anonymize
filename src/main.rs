@@ -1,41 +1,17 @@
 // src/main.rs
 
-use anonymize::{
-    Anonymizer, EmailDetector, PhoneDetector, DniDetector, IbanDetector,
-    CreditCardDetector, SsnDetector, ProjectCodeDetector, ContractNumberDetector,
-    WorkOrderDetector, PurchaseOrderDetector, SerialNumberDetector,
-    CostCenterDetector, Result,
-};
-use std::io::{self, Read};
+use anonymize::web::start_server;
 
-fn main() -> Result<()> {
-    let mut input = String::new();
-    io::stdin().read_to_string(&mut input)?;
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Puerto configurable vía variable de entorno
+    let port: u16 = std::env::var("PORT")
+        .unwrap_or_else(|_| "3000".to_string())
+        .parse()
+        .expect("PORT debe ser un número válido");
 
-    let mut engine = Anonymizer::new();
-    
-    // Personal data detectors
-    engine.add_detector(Box::new(EmailDetector::new()));
-    engine.add_detector(Box::new(PhoneDetector::new()));
-    engine.add_detector(Box::new(DniDetector::new()));
-    engine.add_detector(Box::new(IbanDetector::new()));
-    engine.add_detector(Box::new(CreditCardDetector::new()));
-    engine.add_detector(Box::new(SsnDetector::new()));
-    
-    // Corporate/Industrial detectors
-    engine.add_detector(Box::new(ProjectCodeDetector::new()));
-    engine.add_detector(Box::new(ContractNumberDetector::new()));
-    engine.add_detector(Box::new(WorkOrderDetector::new()));
-    engine.add_detector(Box::new(PurchaseOrderDetector::new()));
-    engine.add_detector(Box::new(SerialNumberDetector::new()));
-    engine.add_detector(Box::new(CostCenterDetector::new()));
-
-    let output = engine.anonymize(&input)?;
-
-    println!("--- ANONYMIZED TEXT ---");
-    println!("{}", output.text);
-    println!("\n--- AUDIT REPORT (JSON) ---");
-    println!("{}", serde_json::to_string_pretty(&output.report).unwrap());
+    // Iniciar servidor web
+    start_server(port).await?;
 
     Ok(())
 }

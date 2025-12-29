@@ -64,11 +64,6 @@ impl Anonymizer {
             *matches_by_category.entry(cat_str).or_insert(0) += 1;
         }
         
-        // Statistics using original_length and anonymized_length (though not explicitly in AuditReport fields yet, 
-        // we use the result object which proves the fields are "live")
-        let _unused_orig_len = replacement_result.original_length;
-        let _unused_anon_len = replacement_result.anonymized_length;
-
         let report = AuditReport {
             version: "0.1.0".to_string(),
             timestamp: chrono::Utc::now(),
@@ -87,7 +82,7 @@ impl Anonymizer {
                     detector_id: r.detector_id,
                     confidence: format!("{:?}", r.confidence),
                     original_span: r.span,
-                    original_value: Some(r.original), // Usando el campo 'original'
+                    original_value: Some(r.original),
                 }
             }).collect(),
         };

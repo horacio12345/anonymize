@@ -4,7 +4,6 @@ use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 use crate::utils::checksum::validate_luhn;
 
-/// Detector for credit card numbers
 pub struct CreditCardDetector {
     regex: Regex,
 }
@@ -12,7 +11,6 @@ pub struct CreditCardDetector {
 impl CreditCardDetector {
     pub fn new() -> Self {
         Self {
-            // 13-19 dígitos con separadores opcionales (-, espacio)
             regex: Regex::new(r"\b[0-9]{4}[-\s]?[0-9]{4}[-\s]?[0-9]{4}[-\s]?[0-9]{4,7}\b")
                 .expect("BUG: Credit card regex is invalid"),
         }

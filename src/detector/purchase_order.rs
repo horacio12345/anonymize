@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for purchase orders
 pub struct PurchaseOrderDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct PurchaseOrderDetector {
 impl PurchaseOrderDetector {
     pub fn new() -> Self {
         Self {
-            // Formatos: PO-XXXXXX, OC-XXXXXX (español), PC-XXXXXX
             regex: Regex::new(r"\b(?:PO|OC|PC)-[0-9]{6,12}\b")
                 .expect("BUG: Purchase order regex is invalid"),
         }

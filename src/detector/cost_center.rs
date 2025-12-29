@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for cost centers
 pub struct CostCenterDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct CostCenterDetector {
 impl CostCenterDetector {
     pub fn new() -> Self {
         Self {
-            // Formato: CC-XXXX a CC-XXXXXXXX
             regex: Regex::new(r"\bCC-[0-9]{4,8}\b")
                 .expect("BUG: Cost center regex is invalid"),
         }

@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for contract numbers
 pub struct ContractNumberDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct ContractNumberDetector {
 impl ContractNumberDetector {
     pub fn new() -> Self {
         Self {
-            // Formato: CTR-XXXX-XXXX o CONT-XXXX-XXXX
             regex: Regex::new(r"\b(?:CTR|CONT|CONTRACT)-[0-9]{4}-[0-9]{4,8}\b")
                 .expect("BUG: Contract number regex is invalid"),
         }

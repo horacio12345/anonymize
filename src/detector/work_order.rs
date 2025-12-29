@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for work orders
 pub struct WorkOrderDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct WorkOrderDetector {
 impl WorkOrderDetector {
     pub fn new() -> Self {
         Self {
-            // Formatos: WO-XXXXX, OT-XXXXX (español), OdT-XXXXX
             regex: Regex::new(r"\b(?:WO|OT|OdT)-[0-9]{4,10}\b")
                 .expect("BUG: Work order regex is invalid"),
         }

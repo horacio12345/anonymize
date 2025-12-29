@@ -3,7 +3,6 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for serial numbers
 pub struct SerialNumberDetector {
     regex: Regex,
 }
@@ -11,7 +10,6 @@ pub struct SerialNumberDetector {
 impl SerialNumberDetector {
     pub fn new() -> Self {
         Self {
-            // Formato: SN seguido de 2 letras y 8 dígitos (ej: SNAB-12345678)
             regex: Regex::new(r"\bSN[A-Z]{2}-[0-9]{8}\b")
                 .expect("BUG: Serial number regex is invalid"),
         }

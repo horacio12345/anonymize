@@ -3,17 +3,14 @@
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
 
-/// Detector for email addresses
 pub struct EmailDetector {
     regex: Regex,
 }
 
 impl EmailDetector {
-    /// Create a new email detector
     pub fn new() -> Self {
         let regex = Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
             .expect("BUG: Email regex pattern is invalid");
-        
         Self { regex }
     }
 }

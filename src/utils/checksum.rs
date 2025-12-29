@@ -58,26 +58,21 @@ pub fn validate_dni(dni: &str) -> bool {
             'X' => '0',
             'Y' => '1',
             'Z' => '2',
-            _ => return false, // Letra inicial inválida
+            _ => return false,
         };
         
-        // Construir número: prefix + 7 dígitos siguientes
         let mut num = String::new();
         num.push(prefix);
         num.push_str(&chars[1..8].iter().collect::<String>());
         num
     };
     
-    // Parsear a número
     let number: u32 = match number_str.parse() {
         Ok(n) => n,
         Err(_) => return false,
     };
     
-    // Calcular letra esperada
     let expected_letter = LETTERS[(number % 23) as usize];
-    
-    // Comparar con la letra real
     chars[8].to_ascii_uppercase() == expected_letter
 }
 
