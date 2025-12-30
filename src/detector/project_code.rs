@@ -7,6 +7,12 @@ pub struct ProjectCodeDetector {
     regex: Regex,
 }
 
+impl Default for ProjectCodeDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ProjectCodeDetector {
     pub fn new() -> Self {
         Self {

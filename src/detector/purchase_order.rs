@@ -7,6 +7,12 @@ pub struct PurchaseOrderDetector {
     regex: Regex,
 }
 
+impl Default for PurchaseOrderDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PurchaseOrderDetector {
     pub fn new() -> Self {
         Self {

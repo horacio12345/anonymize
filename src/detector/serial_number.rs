@@ -7,6 +7,12 @@ pub struct SerialNumberDetector {
     regex: Regex,
 }
 
+impl Default for SerialNumberDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SerialNumberDetector {
     pub fn new() -> Self {
         Self {

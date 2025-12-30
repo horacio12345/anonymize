@@ -7,6 +7,12 @@ pub struct CostCenterDetector {
     regex: Regex,
 }
 
+impl Default for CostCenterDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CostCenterDetector {
     pub fn new() -> Self {
         Self {

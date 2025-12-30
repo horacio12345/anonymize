@@ -8,6 +8,12 @@ pub struct CreditCardDetector {
     regex: Regex,
 }
 
+impl Default for CreditCardDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CreditCardDetector {
     pub fn new() -> Self {
         Self {

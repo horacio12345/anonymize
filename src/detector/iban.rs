@@ -8,6 +8,12 @@ pub struct IbanDetector {
     regex: Regex,
 }
 
+impl Default for IbanDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IbanDetector {
     pub fn new() -> Self {
         Self {

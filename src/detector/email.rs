@@ -7,6 +7,12 @@ pub struct EmailDetector {
     regex: Regex,
 }
 
+impl Default for EmailDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EmailDetector {
     pub fn new() -> Self {
         let regex = Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")

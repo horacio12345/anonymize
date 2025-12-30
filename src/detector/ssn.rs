@@ -7,6 +7,12 @@ pub struct SsnDetector {
     regex: Regex,
 }
 
+impl Default for SsnDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SsnDetector {
     pub fn new() -> Self {
         Self {

@@ -9,6 +9,12 @@ pub struct DniDetector {
     nie_regex: Regex,
 }
 
+impl Default for DniDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DniDetector {
     pub fn new() -> Self {
         Self {

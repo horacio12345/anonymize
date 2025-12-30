@@ -7,6 +7,12 @@ pub struct WorkOrderDetector {
     regex: Regex,
 }
 
+impl Default for WorkOrderDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WorkOrderDetector {
     pub fn new() -> Self {
         Self {

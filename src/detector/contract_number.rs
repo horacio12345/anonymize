@@ -7,6 +7,12 @@ pub struct ContractNumberDetector {
     regex: Regex,
 }
 
+impl Default for ContractNumberDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ContractNumberDetector {
     pub fn new() -> Self {
         Self {

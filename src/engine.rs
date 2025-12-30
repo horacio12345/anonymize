@@ -20,6 +20,12 @@ pub struct Anonymizer {
     detectors: Vec<Box<dyn Detector>>,
 }
 
+impl Default for Anonymizer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Anonymizer {
     pub fn new() -> Self {
         Self {

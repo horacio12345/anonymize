@@ -11,6 +11,12 @@ struct PhonePattern {
     regex: Regex,
 }
 
+impl Default for PhoneDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PhoneDetector {
     pub fn new() -> Self {
         let patterns = vec![
