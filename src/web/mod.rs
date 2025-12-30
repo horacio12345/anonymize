@@ -3,7 +3,7 @@
 pub mod handlers;
 
 use axum::{
-    routing::{get, post},
+    routing::post,
     Router,
 };
 use tower_http::{

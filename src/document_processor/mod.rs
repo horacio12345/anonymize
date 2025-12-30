@@ -1,7 +1,6 @@
 // src/document_processor/mod.rs
 
 pub mod docx;
-pub mod pdf;
 
 use crate::Result;
 
@@ -9,7 +8,6 @@ use crate::Result;
 #[derive(Debug, Clone, Copy)]
 pub enum DocumentType {
     Docx,
-    Pdf,
 }
 
 impl DocumentType {
@@ -18,10 +16,8 @@ impl DocumentType {
         let lower = filename.to_lowercase();
         if lower.ends_with(".docx") {
             Some(DocumentType::Docx)
-        } else if lower.ends_with(".pdf") {
-            Some(DocumentType::Pdf)
         } else {
-            None
+            None 
         }
     }
 }
@@ -46,6 +42,5 @@ pub fn process_document(
 
     match doc_type {
         DocumentType::Docx => docx::process_docx(file_bytes, filename, anonymizer),
-        DocumentType::Pdf => pdf::process_pdf(file_bytes, filename, anonymizer),
     }
 }

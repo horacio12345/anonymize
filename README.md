@@ -8,15 +8,18 @@ Deterministic text anonymization engine written in Rust with web interface.
 - **Auditable**: Complete traceability of all replacements
 - **Offline**: Zero external dependencies, works air-gapped
 - **Conservative**: When in doubt, leaves data untouched
+- **Document Support**: Process Word documents (.docx) while preserving basic structure
 
 ## 🔍 Detection Capabilities
 
 ### Personal Data
+
 - Emails, phone numbers (ES/EN/UK)
 - IBANs, credit cards
 - National IDs (Spanish DNI/NIE, US SSN)
 
 ### Corporate/Industrial Data
+
 - Project codes, contract numbers
 - Work orders, purchase orders
 - Serial numbers, cost centers
@@ -29,6 +32,7 @@ Deterministic text anonymization engine written in Rust with web interface.
 │   (HTMX)         │
 └────────┬─────────┘
          │ HTTP POST /api/anonymize
+         │ HTTP POST /api/anonymize-file
          ▼
 ┌──────────────────┐
 │   Axum Server    │
@@ -45,6 +49,7 @@ Deterministic text anonymization engine written in Rust with web interface.
 ## 🛠️ Local Development
 
 ### Prerequisites
+
 - Rust 1.70+ (`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`)
 - Git
 
@@ -87,6 +92,7 @@ sudo nano /etc/systemd/system/anonymize.service
 ```
 
 **anonymize.service**:
+
 ```ini
 [Unit]
 Description=Anonymize Web Service
@@ -119,6 +125,7 @@ sudo nano /etc/nginx/sites-available/anonymize
 ```
 
 **nginx config**:
+
 ```nginx
 server {
     listen 80;
@@ -179,7 +186,10 @@ echo "Contact: juan@empresa.com, DNI: 12345678Z" | cargo run
 
 ### POST /api/anonymize
 
+Anonymize plain text.
+
 **Request:**
+
 ```json
 {
   "text": "Mi email es juan@empresa.com y mi DNI 12345678Z"
@@ -187,6 +197,7 @@ echo "Contact: juan@empresa.com, DNI: 12345678Z" | cargo run
 ```
 
 **Response:**
+
 ```json
 {
   "anonymized_text": "Mi email es [EMAIL_1] y mi DNI [NATIONAL_ID_1]",
@@ -202,6 +213,18 @@ echo "Contact: juan@empresa.com, DNI: 12345678Z" | cargo run
   "hash": "abc123..."
 }
 ```
+
+### POST /api/anonymize-file
+
+Anonymize Word documents (.docx). Upload a file and receive the anonymized version for download.
+
+**Supported formats:** `.docx` only
+
+**Limitations:**
+
+- Basic formatting preserved
+- Complex tables may be simplified
+- Advanced styles not fully preserved
 
 ## 🔧 Configuration
 
@@ -228,6 +251,7 @@ TBD
 ## 🤝 Contributing
 
 Contributions are welcome! Please ensure:
+
 - Code follows Rust best practices
 - All tests pass (`cargo test`)
 - Changes don't break determinism
@@ -236,6 +260,7 @@ Contributions are welcome! Please ensure:
 ## 🐛 Troubleshooting
 
 ### Server won't start
+
 ```bash
 # Check if port is in use
 sudo lsof -i :3000
@@ -245,6 +270,7 @@ journalctl -u anonymize -f
 ```
 
 ### Build fails
+
 ```bash
 # Update Rust
 rustup update

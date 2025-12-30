@@ -7,8 +7,6 @@ use std::collections::HashMap;
 pub struct ReplacementResult {
     pub anonymized_text: String,
     pub replacements: Vec<Replacement>,
-    pub original_length: usize,
-    pub anonymized_length: usize,
 }
 
 /// Metadata about a single replacement
@@ -65,7 +63,6 @@ impl ReplacementEngine {
         }
         
         let mut anonymized_text = text.to_string();
-        let original_length = text.len();
         
         // Reverse order replacement
         for (m, placeholder) in match_data.into_iter().rev() {
@@ -84,14 +81,10 @@ impl ReplacementEngine {
         
         // The replacements list in the result should be in order of appearance in the original text (for audit)
         replacements.reverse();
-        
-        let anonymized_length = anonymized_text.len();
-        
+                
         ReplacementResult {
             anonymized_text,
             replacements,
-            original_length,
-            anonymized_length,
         }
     }
 }

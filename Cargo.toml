@@ -21,7 +21,5 @@ axum = { version = "0.7", features = ["multipart"] }
 tower = "0.5"
 tower-http = { version = "0.5", features = ["fs", "cors"] }
 
-# Document processing
+# Document processing (DOCX only)
 docx-rs = "0.4"
-lopdf = "0.32"
-pdf-extract = "0.7"

@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anonymize - Anonimización Determinista</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -16,6 +22,7 @@
             justify-content: center;
             align-items: center;
         }
+
         .container {
             max-width: 900px;
             width: 100%;
@@ -24,24 +31,28 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
         }
+
         h1 {
             color: #667eea;
             margin-bottom: 10px;
             font-size: 2.5em;
             text-align: center;
         }
+
         .subtitle {
             color: #666;
             text-align: center;
             margin-bottom: 30px;
             font-size: 1.1em;
         }
+
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
             border-bottom: 2px solid #e0e0e0;
         }
+
         .tab {
             padding: 15px 30px;
             background: none;
@@ -53,14 +64,28 @@
             color: #666;
             transition: all 0.3s;
         }
-        .tab:hover { color: #667eea; }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
         .tab.active {
             color: #667eea;
             border-bottom-color: #667eea;
         }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .input-section { margin-bottom: 30px; }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
         label {
             display: block;
             color: #333;
@@ -68,6 +93,7 @@
             margin-bottom: 10px;
             font-size: 1.1em;
         }
+
         textarea {
             width: 100%;
             min-height: 200px;
@@ -79,10 +105,12 @@
             resize: vertical;
             transition: border-color 0.3s;
         }
+
         textarea:focus {
             outline: none;
             border-color: #667eea;
         }
+
         .file-upload-area {
             border: 2px dashed #667eea;
             border-radius: 8px;
@@ -92,19 +120,33 @@
             transition: all 0.3s;
             cursor: pointer;
         }
+
         .file-upload-area:hover {
             background: #e9ecef;
             border-color: #764ba2;
         }
-        .file-input { display: none; }
-        .upload-icon { font-size: 48px; margin-bottom: 10px; }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
         .upload-text {
             color: #667eea;
             font-weight: 600;
             font-size: 18px;
             margin-bottom: 5px;
         }
-        .upload-hint { color: #999; font-size: 14px; }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
         .file-info {
             display: none;
             margin-top: 20px;
@@ -113,13 +155,18 @@
             border-radius: 6px;
             border-left: 4px solid #667eea;
         }
-        .file-info.show { display: block; }
+
+        .file-info.show {
+            display: block;
+        }
+
         .button-container {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-bottom: 30px;
         }
+
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -131,21 +178,43 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         button.secondary {
             background: #e0e0e0;
             color: #666;
         }
-        .result-section { display: none; animation: fadeIn 0.5s; }
-        .result-section.show { display: block; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .result-section {
+            display: none;
+            animation: fadeIn 0.5s;
         }
+
+        .result-section.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .result-box {
             background: #f8f9fa;
             border-radius: 8px;
@@ -153,12 +222,14 @@
             margin-bottom: 20px;
             border-left: 4px solid #667eea;
         }
+
         .result-title {
             color: #667eea;
             font-weight: 600;
             margin-bottom: 15px;
             font-size: 1.2em;
         }
+
         .loading {
             display: none;
             text-align: center;
@@ -166,7 +237,11 @@
             color: #667eea;
             font-weight: 600;
         }
-        .htmx-request .loading { display: block; }
+
+        .htmx-request .loading {
+            display: block;
+        }
+
         .footer {
             margin-top: 30px;
             text-align: center;
@@ -175,6 +250,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🔒 Anonymize</h1>
@@ -203,13 +279,13 @@
         <!-- TAB ARCHIVO -->
         <div id="tab-file" class="tab-content">
             <div class="input-section">
-                <label>Archivo (.docx o .pdf):</label>
+                <label>Archivo (.docx):</label>
                 <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Click para seleccionar</div>
-                    <div class="upload-hint">Formatos: .docx, .pdf (máx. 10MB)</div>
+                    <div class="upload-hint">Formato: .docx (máx. 10MB)</div>
                 </div>
-                <input type="file" id="fileInput" class="file-input" accept=".docx,.pdf" onchange="handleFile(event)">
+                <input type="file" id="fileInput" class="file-input" accept=".docx" onchange="handleFile(event)">
                 <div class="file-info" id="fileInfo">
                     <div id="fileName"></div>
                 </div>
@@ -240,12 +316,12 @@
         function handleFile(e) {
             const file = e.target.files[0];
             if (!file) return;
-            
+
             if (file.size > 10 * 1024 * 1024) {
                 alert('Archivo muy grande (máx. 10MB)');
                 return;
             }
-            
+
             selectedFile = file;
             document.getElementById('fileName').textContent = file.name;
             document.getElementById('fileInfo').classList.add('show');
@@ -280,7 +356,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = selectedFile.name.replace(/\.(docx|pdf)$/, '_anonymized.$1');
+                a.download = selectedFile.name.replace(/\.docx$/i, '_anonymized.docx');
                 a.click();
                 URL.revokeObjectURL(url);
 
@@ -305,7 +381,7 @@
             }
         }
 
-        document.body.addEventListener('htmx:beforeSwap', function(evt) {
+        document.body.addEventListener('htmx:beforeSwap', function (evt) {
             if (evt.detail.xhr.status === 200) {
                 const data = JSON.parse(evt.detail.xhr.responseText);
                 evt.detail.serverResponse = `
@@ -324,4 +400,5 @@
         });
     </script>
 </body>
+
 </html>
