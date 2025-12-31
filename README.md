@@ -128,36 +128,6 @@ curl -X POST http://localhost:3000/api/anonymize-file \
 
 The `file_base64` field contains the anonymized document encoded in base64. Decode and save as `.docx` to access the processed document.
 
-## Deployment
-
-### Production deployment
-
-For production deployment to a Linux server, use the provided deployment script:
-
-```bash
-./deploy.sh user@your-server.com
-```
-
-This script:
-
-1. Compiles the release binary
-2. Copies files to the server
-3. Configures systemd service
-4. Sets up Nginx reverse proxy
-
-### Manual deployment
-
-See [deployment instructions](./README.md#-production-deployment-hetzner-vps) for manual setup steps.
-
-### HTTPS configuration
-
-Use Certbot for Let's Encrypt SSL certificates:
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com
-```
-
 ## Architecture
 
 ### System design
