@@ -194,6 +194,11 @@
             color: #666;
         }
 
+        button.download {
+            background: #28a745;
+            margin-top: 15px;
+        }
+
         .result-section {
             display: none;
             animation: fadeIn 0.5s;
@@ -228,6 +233,22 @@
             font-weight: 600;
             margin-bottom: 15px;
             font-size: 1.2em;
+        }
+
+        .stats {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .stats p {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .stats .highlight {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 1.1em;
         }
 
         .loading {
@@ -333,6 +354,8 @@
             document.getElementById('fileInput').value = '';
             document.getElementById('fileInfo').classList.remove('show');
             document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('results-file').innerHTML = '';
+            document.getElementById('results-file').classList.remove('show');
         }
 
         async function uploadFile() {
@@ -352,18 +375,21 @@
 
                 if (!res.ok) throw new Error('Error al procesar');
 
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = selectedFile.name.replace(/\.docx$/i, '_anonymized.docx');
-                a.click();
-                URL.revokeObjectURL(url);
+                // Ahora recibimos JSON con base64 y estadísticas
+                const data = await res.json();
 
+                // Mostrar resultados con estadísticas
                 document.getElementById('results-file').innerHTML = `
                     <div class="result-box">
-                        <div class="result-title">✅ Completado</div>
-                        <p>Documento descargado exitosamente</p>
+                        <div class="result-title">✅ Documento Procesado</div>
+                        <p><strong>Archivo:</strong> ${data.filename}</p>
+                        <div class="stats">
+                            <p>📊 <strong>Detecciones:</strong> <span class="highlight">${data.statistics.total_detections}</span></p>
+                            <p>⚡ <strong>Tiempo de procesamiento:</strong> <span class="highlight">${data.statistics.processing_time_ms}ms</span></p>
+                        </div>
+                        <button class="download" onclick="downloadFile('${data.file_base64}', '${data.filename}')">
+                            💾 Descargar Documento Anonimizado
+                        </button>
                     </div>
                 `;
                 document.getElementById('results-file').classList.add('show');
@@ -381,6 +407,31 @@
             }
         }
 
+        function downloadFile(base64Data, filename) {
+            // Convertir base64 a blob
+            const byteCharacters = atob(base64Data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], {
+                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+
+            // Crear link de descarga
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Asegurar que siempre tiene extensión .docx
+            const baseName = filename.replace(/\.docx$/i, '');
+            a.download = baseName + '.docx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         document.body.addEventListener('htmx:beforeSwap', function (evt) {
             if (evt.detail.xhr.status === 200) {
                 const data = JSON.parse(evt.detail.xhr.responseText);
@@ -391,8 +442,8 @@
                     </div>
                     <div class="result-box">
                         <div class="result-title">📊 Estadísticas</div>
-                        <p>Detecciones: ${data.audit_report.statistics.total_matches}</p>
-                        <p>Tiempo: ${data.audit_report.statistics.processing_time_ms}ms</p>
+                        <p>Detecciones: <span class="highlight">${data.audit_report.statistics.total_matches}</span></p>
+                        <p>Tiempo: <span class="highlight">${data.audit_report.statistics.processing_time_ms}ms</span> ⚡</p>
                     </div>
                 `;
                 document.getElementById('results-text').classList.add('show');

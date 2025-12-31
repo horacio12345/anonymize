@@ -1,7 +1,7 @@
 // src/web/handlers.rs
 
 use axum::{
-    extract::{Json, Multipart},
+    extract::{Json, Multipart, Form},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
@@ -28,6 +28,21 @@ pub struct AnonymizeResponse {
     pub anonymized_text: String,
     pub audit_report: AuditReport,
     pub hash: String,
+}
+
+/// Response payload del endpoint /anonymize-file
+#[derive(Serialize)]
+pub struct AnonymizeFileResponse {
+    pub file_base64: String,
+    pub filename: String,
+    pub statistics: FileStatistics,
+}
+
+/// Estadísticas simplificadas para archivos
+#[derive(Serialize)]
+pub struct FileStatistics {
+    pub total_detections: usize,
+    pub processing_time_ms: u64,
 }
 
 /// Error personalizado para respuestas HTTP
@@ -79,7 +94,7 @@ fn create_anonymizer() -> Anonymizer {
 
 /// Handler para anonimización de texto plano
 pub async fn anonymize_handler(
-    Json(payload): Json<AnonymizeRequest>,
+    Form(payload): Form<AnonymizeRequest>,
 ) -> Result<Json<AnonymizeResponse>, AppError> {
     let engine = create_anonymizer();
     let output = engine.anonymize(&payload.text)?;
@@ -93,10 +108,14 @@ pub async fn anonymize_handler(
     Ok(Json(response))
 }
 
-/// Handler para anonimización de archivos (DOCX/PDF)
+/// Handler para anonimización de archivos (devuelve JSON con base64)
 pub async fn anonymize_file_handler(
     mut multipart: Multipart,
-) -> Result<Response, AppError> {
+) -> Result<Json<AnonymizeFileResponse>, AppError> {
+    use std::time::Instant;
+    
+    let start = Instant::now();
+    
     // Extraer archivo del multipart
     let mut file_bytes: Option<Vec<u8>> = None;
     let mut filename: Option<String> = None;
@@ -124,16 +143,69 @@ pub async fn anonymize_file_handler(
     // Procesar documento
     let processed = document_processor::process_document(&file_bytes, &filename, &engine)?;
     
-    // Devolver archivo procesado
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header("Content-Type", processed.content_type)
-        .header(
-            "Content-Disposition",
-            format!("attachment; filename=\"{}\"", processed.filename)
-        )
-        .body(processed.content.into())
-        .map_err(|e| AppError(format!("Error al crear respuesta: {}", e)))?;
+    // Calcular tiempo de procesamiento
+    let processing_time = start.elapsed().as_millis() as u64;
     
-    Ok(response)
+    // Convertir contenido a base64
+    let file_base64 = base64_encode(&processed.content);
+    
+    // Crear respuesta con estadísticas
+    let response = AnonymizeFileResponse {
+        file_base64,
+        filename: processed.filename,
+        statistics: FileStatistics {
+            total_detections: 0,  // TODO: Extraer del audit report si está disponible
+            processing_time_ms: processing_time,
+        },
+    };
+    
+    Ok(Json(response))
+}
+
+/// Encode bytes to base64 string
+fn base64_encode(bytes: &[u8]) -> String {
+    use std::fmt::Write;
+    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    
+    let mut result = String::with_capacity((bytes.len() + 2) / 3 * 4);
+    let mut i = 0;
+    
+    while i + 2 < bytes.len() {
+        let b1 = bytes[i];
+        let b2 = bytes[i + 1];
+        let b3 = bytes[i + 2];
+        
+        let _ = write!(result, "{}{}{}{}",
+            CHARSET[(b1 >> 2) as usize] as char,
+            CHARSET[(((b1 & 0x03) << 4) | (b2 >> 4)) as usize] as char,
+            CHARSET[(((b2 & 0x0F) << 2) | (b3 >> 6)) as usize] as char,
+            CHARSET[(b3 & 0x3F) as usize] as char,
+        );
+        
+        i += 3;
+    }
+    
+    // Handle remaining bytes
+    if i < bytes.len() {
+        let b1 = bytes[i];
+        let _ = write!(result, "{}{}", 
+            CHARSET[(b1 >> 2) as usize] as char,
+            CHARSET[((b1 & 0x03) << 4) as usize] as char,
+        );
+        
+        if i + 1 < bytes.len() {
+            let b2 = bytes[i + 1];
+            let _ = write!(result, "{}",
+                CHARSET[(((b1 & 0x03) << 4) | (b2 >> 4)) as usize] as char,
+            );
+            let _ = write!(result, "{}",
+                CHARSET[((b2 & 0x0F) << 2) as usize] as char,
+            );
+        } else {
+            result.push('=');
+        }
+        result.push('=');
+    }
+    
+    result
 }
