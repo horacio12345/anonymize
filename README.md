@@ -35,7 +35,7 @@ Deterministic text anonymization engine with web interface.
 ### Build from source
 
 ```bash
-git clone https://github.com/yourusername/anonymize.git
+git clone https://github.com/horacio12345/anonymize.git
 cd anonymize
 cargo build --release
 ```
