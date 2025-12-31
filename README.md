@@ -298,27 +298,9 @@ Contributions are welcome. Please ensure:
 3. Changes maintain determinism guarantees
 4. New detectors include validation tests
 
-## Documentation
-
-- [Architecture](./ARCHITECTURE.md) - technical design specification
-- [Quick Start](./QUICKSTART.md) - 5-minute setup guide
-- [Changelog](./CHANGELOG.md) - version history
-
-## Security considerations
-
-- **Audit reports**: full audit mode includes original values; protect with appropriate access controls
-- **Input validation**: rejects malformed UTF-8 and oversized inputs
-- **No external calls**: operates offline; suitable for air-gapped environments
-- **HTTPS recommended**: use TLS in production to protect data in transit
-
 ## License
 
 MIT
-
-## Contact
-
-- Issues: [GitHub Issues](https://github.com/yourusername/anonymize/issues)
-- Documentation: [docs](./ARCHITECTURE.md)
 
 ---
 
