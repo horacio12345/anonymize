@@ -313,7 +313,7 @@ Contributions are welcome. Please ensure:
 
 ## License
 
-TBD
+MIT
 
 ## Contact
 
