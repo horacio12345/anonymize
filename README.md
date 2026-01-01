@@ -14,7 +14,7 @@ Deterministic text anonymization engine with web interface.
 - Deterministic replacement (same input → same output)
 - 15+ pattern detectors (DNI/NIE, IBAN, credit cards, emails, etc.)
 - Cryptographic audit trail (SHA-256 hashes)
-- Web UI with file upload support (.docx, .pdf)
+- Web UI with file upload support (.docx)
 - Zero configuration required
 
 ## Quick Start
@@ -151,9 +151,9 @@ src/
 
 **Request:** `multipart/form-data` with file field
 
-**Response:** Anonymized document (same format as input)
+**Response:** Anonymized document (.docx format)
 
-**Supported formats:** .docx, .pdf
+**Supported format:** `.docx` only
 
 ## Configuration
 
@@ -185,7 +185,7 @@ Performance varies depending on hardware and input characteristics.
 
 - **Text extraction**: .docx processing extracts text only; complex formatting (tables, styles) may be simplified
 - **Pattern-based**: does not detect free-form text (names, addresses) without explicit patterns
-- **Single document format**: only .docx and .pdf are supported; .doc, .odt are not supported
+- **Document format**: only .docx is supported; .doc, .pdf, .odt are not supported
 - **No streaming**: entire document must fit in memory (max 100MB)
 - **Web UI file limit**: 10MB maximum in browser interface
 
@@ -268,7 +268,7 @@ Built with:
 
 - [ ] Custom pattern configuration via TOML
 - [ ] Batch processing API
-- [ ] More document formats (.odt, .rtf)
+- [ ] More document formats (.pdf, .odt, .rtf)
 - [ ] Docker compose with nginx
 - [ ] Prometheus metrics endpoint
 - [ ] CLI with colored output
