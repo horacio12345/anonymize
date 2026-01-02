@@ -34,25 +34,25 @@ pub fn validate_iban(iban: &str) -> bool {
     remainder == 1
 }
 
-/// Spanish DNI Letter
-pub fn validate_dni(dni: &str) -> bool {
+/// Spanish ID (DNI/NIE)
+pub fn validate_spanish_id(id: &str) -> bool {
     const LETTERS: &[char] = &[
         'T', 'R', 'W', 'A', 'G', 'M', 'Y', 'F', 'P', 'D',
         'X', 'B', 'N', 'J', 'Z', 'S', 'Q', 'V', 'H', 'L',
         'C', 'K', 'E'
     ];
     
-    let chars: Vec<char> = dni.chars().collect();
+    let chars: Vec<char> = id.chars().collect();
     if chars.len() != 9 {
         return false;
     }
     
-    // Extraer la parte numérica
+    // Extract numerical part
     let number_str: String = if chars[0].is_ascii_digit() {
-        // DNI: primeros 8 caracteres son dígitos
+        // Spanish National ID: first 8 characters are digits
         chars[..8].iter().collect()
     } else {
-        // NIE: convertir letra inicial (X=0, Y=1, Z=2) + 7 dígitos
+        // Foreigner ID: convert initial letter (X=0, Y=1, Z=2) + 7 digits
         let first_char = chars[0].to_ascii_uppercase();
         let prefix = match first_char {
             'X' => '0',

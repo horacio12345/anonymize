@@ -5,28 +5,28 @@ use super::ProcessedDocument;
 use docx_rs::*;
 use std::io::Cursor;
 
-/// Procesar archivo DOCX
+/// Process DOCX file
 pub fn process_docx(
     file_bytes: &[u8],
     original_filename: &str,
     anonymizer: &Anonymizer,
 ) -> Result<ProcessedDocument> {
-    // Leer documento DOCX (API actualizada: acepta &[u8] directamente)
+    // Read DOCX document (Updated API: accepts &[u8] directly)
     let docx = read_docx(file_bytes)
         .map_err(|e| AnonymizeError::ConfigError {
-            message: format!("Error al leer DOCX: {}", e),
+            message: format!("Error reading DOCX: {}", e),
         })?;
 
-    // Extraer todo el texto del documento
+    // Extract all text from the document
     let text = extract_text_from_docx(&docx);
 
-    // Anonimizar texto con el motor existente
+    // Anonymize text with the existing engine
     let output = anonymizer.anonymize(&text)?;
 
-    // Crear nuevo documento con texto anonimizado
+    // Create new document with anonymized text
     let new_docx = create_anonymized_docx(&output.text);
 
-    // Serializar a bytes (pack necesita Write + Seek)
+    // Serialize to bytes (pack needs Write + Seek)
     let mut buffer = Vec::new();
     let mut cursor = Cursor::new(&mut buffer);
     
@@ -34,10 +34,10 @@ pub fn process_docx(
         .build()
         .pack(&mut cursor)
         .map_err(|e| AnonymizeError::ConfigError {
-            message: format!("Error al crear DOCX: {}", e),
+            message: format!("Error creating DOCX: {}", e),
         })?;
 
-    // Generar nombre de archivo
+    // Generate filename
     let new_filename = generate_output_filename(original_filename);
 
     Ok(ProcessedDocument {
@@ -48,7 +48,7 @@ pub fn process_docx(
     })
 }
 
-/// Extraer texto de un documento DOCX (simplificado)
+/// Extract text from a DOCX document (simplified)
 fn extract_text_from_docx(docx: &Docx) -> String {
     let mut text = String::new();
     
@@ -66,11 +66,11 @@ fn extract_text_from_docx(docx: &Docx) -> String {
                 }
                 text.push('\n');
             }
-            // Tablas simplificadas - solo extraer texto básico
+            // Simplified tables - only extract basic text
             DocumentChild::Table(_table) => {
-                // La estructura de tablas es compleja y varía según versión
-                // Por ahora, añadimos placeholder
-                text.push_str("[TABLA]\n");
+                // Table structure is complex and varies by version
+                // For now, add placeholder
+                text.push_str("[TABLE]\n");
             }
             _ => {}
         }
@@ -79,11 +79,11 @@ fn extract_text_from_docx(docx: &Docx) -> String {
     text
 }
 
-/// Crear documento DOCX con texto anonimizado
+/// Create DOCX document with anonymized text
 fn create_anonymized_docx(anonymized_text: &str) -> Docx {
     let mut docx = Docx::new();
     
-    // Dividir el texto anonimizado en párrafos
+    // Split anonymized text into paragraphs
     for line in anonymized_text.lines() {
         if !line.trim().is_empty() {
             docx = docx.add_paragraph(
@@ -91,7 +91,7 @@ fn create_anonymized_docx(anonymized_text: &str) -> Docx {
                     .add_run(Run::new().add_text(line))
             );
         } else {
-            // Línea vacía = párrafo vacío
+            // Empty line = empty paragraph
             docx = docx.add_paragraph(Paragraph::new());
         }
     }
@@ -99,7 +99,7 @@ fn create_anonymized_docx(anonymized_text: &str) -> Docx {
     docx
 }
 
-/// Generar nombre de archivo de salida
+/// Generate output filename
 fn generate_output_filename(original: &str) -> String {
     let stem = original
         .trim_end_matches(".docx")

@@ -1,34 +1,34 @@
-// src/detector/dni.rs
+// src/detector/spanish_id.rs
 
 use regex::Regex;
 use crate::detector::{Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult};
-use crate::utils::checksum::validate_dni;
+use crate::utils::checksum::validate_spanish_id;
 
-pub struct DniDetector {
-    dni_regex: Regex,
-    nie_regex: Regex,
+pub struct SpanishIdDetector {
+    national_id_regex: Regex,
+    foreign_id_regex: Regex,
 }
 
-impl Default for DniDetector {
+impl Default for SpanishIdDetector {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl DniDetector {
+impl SpanishIdDetector {
     pub fn new() -> Self {
         Self {
-            dni_regex: Regex::new(r"\b[0-9]{8}[A-Z]\b")
-                .expect("BUG: DNI regex is invalid"),
-            nie_regex: Regex::new(r"\b[XYZ][0-9]{7}[A-Z]\b")
-                .expect("BUG: NIE regex is invalid"),
+            national_id_regex: Regex::new(r"\b[0-9]{8}[A-Z]\b")
+                .expect("BUG: Spanish National ID regex is invalid"),
+            foreign_id_regex: Regex::new(r"\b[XYZ][0-9]{7}[A-Z]\b")
+                .expect("BUG: Spanish Foreigner ID regex is invalid"),
         }
     }
 }
 
-impl Detector for DniDetector {
+impl Detector for SpanishIdDetector {
     fn id(&self) -> DetectorId {
-        "dni".to_string()
+        "spanish_id".to_string()
     }
     
     fn category(&self) -> Category {
@@ -38,7 +38,7 @@ impl Detector for DniDetector {
     fn detect(&self, text: &str) -> Vec<CandidateMatch> {
         let mut matches = Vec::new();
         
-        for m in self.dni_regex.find_iter(text) {
+        for m in self.national_id_regex.find_iter(text) {
             let raw = m.as_str();
             let validation = self.validate(raw);
             
@@ -58,11 +58,11 @@ impl Detector for DniDetector {
                 priority: self.priority(),
                 confidence,
                 raw_value: raw.to_string(),
-                normalized_value: Some(normalize_dni(raw)),
+                normalized_value: Some(normalize_spanish_id(raw)),
             });
         }
         
-        for m in self.nie_regex.find_iter(text) {
+        for m in self.foreign_id_regex.find_iter(text) {
             let raw = m.as_str();
             let validation = self.validate(raw);
             
@@ -82,7 +82,7 @@ impl Detector for DniDetector {
                 priority: self.priority(),
                 confidence,
                 raw_value: raw.to_string(),
-                normalized_value: Some(normalize_dni(raw)),
+                normalized_value: Some(normalize_spanish_id(raw)),
             });
         }
         
@@ -90,7 +90,7 @@ impl Detector for DniDetector {
     }
 
     fn validate(&self, candidate: &str) -> ValidationResult {
-        if validate_dni(candidate) {
+        if validate_spanish_id(candidate) {
             ValidationResult::Valid
         } else {
             ValidationResult::Invalid
@@ -102,6 +102,6 @@ impl Detector for DniDetector {
     }
 }
 
-fn normalize_dni(dni: &str) -> String {
-    dni.to_uppercase()
+fn normalize_spanish_id(id: &str) -> String {
+    id.to_uppercase()
 }

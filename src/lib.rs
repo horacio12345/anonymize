@@ -13,13 +13,13 @@ mod audit_report;
 mod engine;
 pub mod utils;
 pub mod web;
-pub mod document_processor; // Nuevo: procesamiento de documentos
+pub mod document_processor; // New: document processing
 
 pub use error::AnonymizeError;
 pub use normalizer::{normalize, NormalizedText};
 pub use detector::{
     Detector, CandidateMatch, Category, Span, DetectorId, Confidence, ValidationResult,
-    EmailDetector, PhoneDetector, DniDetector, IbanDetector, CreditCardDetector,
+    EmailDetector, PhoneDetector, SpanishIdDetector, IbanDetector, CreditCardDetector,
     SsnDetector, ProjectCodeDetector, ContractNumberDetector, WorkOrderDetector,
     PurchaseOrderDetector, SerialNumberDetector, CostCenterDetector,
 };

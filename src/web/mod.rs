@@ -12,9 +12,9 @@ use tower_http::{
 };
 use std::net::SocketAddr;
 
-/// Crear el router principal de la aplicación
+/// Create the main application router
 pub fn create_router() -> Router {
-    // CORS para desarrollo
+    // CORS for development
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
@@ -24,18 +24,18 @@ pub fn create_router() -> Router {
         // API endpoints
         .route("/api/anonymize", post(handlers::anonymize_handler))
         .route("/api/anonymize-file", post(handlers::anonymize_file_handler))
-        // Servir archivos estáticos
+        // Serve static files
         .nest_service("/", ServeDir::new("src/web/static"))
         .layer(cors)
 }
 
-/// Iniciar el servidor web
+/// Start the web server
 pub async fn start_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     let app = create_router();
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     
-    println!("🚀 Servidor iniciado en http://0.0.0.0:{}", port);
-    println!("   Abre http://localhost:{} en tu navegador", port);
+    println!("🚀 Server started at http://0.0.0.0:{}", port);
+    println!("   Open http://localhost:{} in your browser", port);
     
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;

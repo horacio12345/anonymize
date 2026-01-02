@@ -4,14 +4,14 @@ pub mod docx;
 
 use crate::{Result, AuditReport};
 
-/// Tipo de documento detectado
+/// Detected document type
 #[derive(Debug, Clone, Copy)]
 pub enum DocumentType {
     Docx,
 }
 
 impl DocumentType {
-    /// Detectar tipo por extensión
+    /// Detect type by extension
     pub fn from_filename(filename: &str) -> Option<Self> {
         let lower = filename.to_lowercase();
         if lower.ends_with(".docx") {
@@ -22,7 +22,7 @@ impl DocumentType {
     }
 }
 
-/// Resultado del procesamiento de un documento
+/// Result of document processing
 pub struct ProcessedDocument {
     pub content: Vec<u8>,
     pub content_type: String,
@@ -30,7 +30,7 @@ pub struct ProcessedDocument {
     pub audit_report: AuditReport,
 }
 
-/// Procesar documento según tipo
+/// Process document according to type
 pub fn process_document(
     file_bytes: &[u8],
     filename: &str,
@@ -38,7 +38,7 @@ pub fn process_document(
 ) -> Result<ProcessedDocument> {
     let doc_type = DocumentType::from_filename(filename)
         .ok_or_else(|| crate::AnonymizeError::ConfigError {
-            message: format!("Tipo de archivo no soportado: {}", filename),
+            message: format!("Unsupported file type: {}", filename),
         })?;
 
     match doc_type {

@@ -12,7 +12,7 @@ Deterministic text anonymization engine with web interface.
 **Key features:**
 
 - Deterministic replacement (same input → same output)
-- 15+ pattern detectors (DNI/NIE, IBAN, credit cards, emails, etc.)
+- 15+ pattern detectors (Spanish National ID, IBAN, credit cards, emails, etc.)
 - Cryptographic audit trail (SHA-256 hashes)
 - Web UI with file upload support (.docx)
 - Zero configuration required
@@ -60,7 +60,7 @@ curl -X POST http://localhost:3000/api/anonymize \
 
 | Category | Examples | Checksum Validation |
 |----------|----------|---------------------|
-| **Spanish ID** | DNI, NIE | ✅ Mod-23 algorithm |
+| **Spanish ID** | Spanish National ID/Foreigner ID | ✅ Mod-23 algorithm |
 | **Banking** | IBAN (ES), Credit Cards | ✅ ISO 7064, Luhn |
 | **Contact** | Email, Phone (ES/intl), URLs | ❌ Format only |
 | **Identification** | Passport, Social Security | ❌ Format only |
@@ -71,7 +71,7 @@ curl -X POST http://localhost:3000/api/anonymize \
 
 ### Pattern Details
 
-- **DNI/NIE**: Spanish national ID with mod-23 letter validation
+- **Spanish National ID**: Spanish national ID with mod-23 letter validation
 - **IBAN**: International bank account (ES prefix validated)
 - **Credit Card**: Visa, MasterCard, Amex (Luhn algorithm)
 - **Phone**: Spanish landlines/mobiles (+34) and international formats
@@ -84,7 +84,7 @@ curl -X POST http://localhost:3000/api/anonymize \
 ```
 src/
 ├── detector/          # 15+ pattern detection modules
-│   ├── dni.rs        # Spanish ID with checksum
+│   ├── spanish_id.rs  # Spanish ID with checksum
 │   ├── iban.rs       # IBAN with ISO 7064
 │   ├── credit_card.rs # Luhn validation
 │   └── ...

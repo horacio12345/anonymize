@@ -8,7 +8,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use crate::{
     Anonymizer, 
-    EmailDetector, PhoneDetector, DniDetector, IbanDetector,
+    EmailDetector, PhoneDetector, SpanishIdDetector, IbanDetector,
     CreditCardDetector, SsnDetector, ProjectCodeDetector, ContractNumberDetector,
     WorkOrderDetector, PurchaseOrderDetector, SerialNumberDetector,
     CostCenterDetector,
@@ -16,13 +16,13 @@ use crate::{
     document_processor,
 };
 
-/// Request payload para el endpoint /anonymize
+/// Request payload for the /anonymize endpoint
 #[derive(Deserialize)]
 pub struct AnonymizeRequest {
     pub text: String,
 }
 
-/// Response payload del endpoint /anonymize
+/// Response payload for the /anonymize endpoint
 #[derive(Serialize)]
 pub struct AnonymizeResponse {
     pub anonymized_text: String,
@@ -30,7 +30,7 @@ pub struct AnonymizeResponse {
     pub hash: String,
 }
 
-/// Response payload del endpoint /anonymize-file
+/// Response payload for the /anonymize-file endpoint
 #[derive(Serialize)]
 pub struct AnonymizeFileResponse {
     pub file_base64: String,
@@ -38,7 +38,7 @@ pub struct AnonymizeFileResponse {
     pub audit_report: AuditReport,
 }
 
-/// Error personalizado para respuestas HTTP
+/// Custom error for HTTP responses
 #[derive(Debug)]
 pub struct AppError(String);
 
@@ -62,14 +62,14 @@ where
     }
 }
 
-/// Crear motor de anonimización con todos los detectores
+/// Create anonymization engine with all detectors
 fn create_anonymizer() -> Anonymizer {
     let mut engine = Anonymizer::new();
     
     // Personal data detectors
     engine.add_detector(Box::new(EmailDetector::new()));
     engine.add_detector(Box::new(PhoneDetector::new()));
-    engine.add_detector(Box::new(DniDetector::new()));
+    engine.add_detector(Box::new(SpanishIdDetector::new()));
     engine.add_detector(Box::new(IbanDetector::new()));
     engine.add_detector(Box::new(CreditCardDetector::new()));
     engine.add_detector(Box::new(SsnDetector::new()));
@@ -85,7 +85,7 @@ fn create_anonymizer() -> Anonymizer {
     engine
 }
 
-/// Handler para anonimización de texto plano
+/// Handler for plain text anonymization
 pub async fn anonymize_handler(
     Form(payload): Form<AnonymizeRequest>,
 ) -> Result<Json<AnonymizeResponse>, AppError> {
@@ -101,60 +101,60 @@ pub async fn anonymize_handler(
     Ok(Json(response))
 }
 
-/// Handler para anonimización de archivos (devuelve JSON con base64)
+/// Handler for file anonymization (returns JSON with base64)
 pub async fn anonymize_file_handler(
     mut multipart: Multipart,
 ) -> Result<Json<AnonymizeFileResponse>, AppError> {
-    // Extraer archivo del multipart
+    // Extract file from multipart
     let mut file_bytes: Option<Vec<u8>> = None;
     let mut filename: Option<String> = None;
     
     while let Some(field) = multipart.next_field().await
-        .map_err(|e| AppError(format!("Error al leer multipart: {}", e)))? 
+        .map_err(|e| AppError(format!("Error reading multipart: {}", e)))? 
     {
         let field_name = field.name().unwrap_or("").to_string();
         
         if field_name == "file" {
             filename = field.file_name().map(|s| s.to_string());
             file_bytes = Some(field.bytes().await
-                .map_err(|e| AppError(format!("Error al leer bytes: {}", e)))?
+                .map_err(|e| AppError(format!("Error reading bytes: {}", e)))?
                 .to_vec());
         }
     }
     
-    // Validar que tenemos archivo
-    let file_bytes = file_bytes.ok_or_else(|| AppError("No se recibió archivo".to_string()))?;
-    let filename = filename.ok_or_else(|| AppError("No se recibió nombre de archivo".to_string()))?;
+    // Validate that we have a file
+    let file_bytes = file_bytes.ok_or_else(|| AppError("No file received".to_string()))?;
+    let filename = filename.ok_or_else(|| AppError("No filename received".to_string()))?;
     
-    // Validar tamaño de archivo (max 10MB)
+    // Validate file size (max 10MB)
     if file_bytes.len() > 10 * 1024 * 1024 {
-        return Err(AppError("Archivo demasiado grande (max 10MB)".to_string()));
+        return Err(AppError("File too large (max 10MB)".to_string()));
     }
     
-    // Crear motor de anonimización
+    // Create anonymization engine
     let engine = create_anonymizer();
     
-    // Procesar documento
+    // Process document
     let processed = document_processor::process_document(&file_bytes, &filename, &engine)?;
     
-    // IMPORTANTE: Validar que el contenido procesado no está vacío
+    // IMPORTANT: Validate that processed content is not empty
     if processed.content.is_empty() {
-        return Err(AppError("El documento procesado está vacío".to_string()));
+        return Err(AppError("Processed document is empty".to_string()));
     }
     
-    // Convertir contenido a base64 usando la crate base64
+    // Convert content to base64 using the base64 crate
     let file_base64 = base64_encode(&processed.content);
     
-    // Validar que el base64 no está vacío
+    // Validate that base64 is not empty
     if file_base64.is_empty() {
-        return Err(AppError("Error al generar base64".to_string()));
+        return Err(AppError("Error generating base64".to_string()));
     }
     
-    // Log para debugging (remover en producción si es necesario)
-    eprintln!("✓ Archivo procesado: {} bytes -> {} caracteres base64", 
+    // Debugging log (remove in production if necessary)
+    eprintln!("✓ File processed: {} bytes -> {} base64 characters", 
               processed.content.len(), file_base64.len());
     
-    // Crear respuesta con audit report completo
+    // Create response with full audit report
     let response = AnonymizeFileResponse {
         file_base64,
         filename: processed.filename,
@@ -164,11 +164,11 @@ pub async fn anonymize_file_handler(
     Ok(Json(response))
 }
 
-/// Encode bytes to base64 string usando base64 crate
-/// Garantiza que no hay espacios ni saltos de línea
+/// Encode bytes to base64 string using base64 crate
+/// Guarantees no spaces or line breaks
 fn base64_encode(bytes: &[u8]) -> String {
     use base64::{Engine as _, engine::general_purpose};
     
-    // STANDARD produce base64 limpio sin espacios ni saltos de línea
+    // STANDARD produces clean base64 without spaces or line breaks
     general_purpose::STANDARD.encode(bytes)
 }

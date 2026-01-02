@@ -2,7 +2,7 @@
 
 mod email;
 mod phone;
-mod dni;
+mod spanish_id;
 mod iban;
 mod credit_card;
 mod ssn;
@@ -15,7 +15,7 @@ mod cost_center;
 
 pub use email::EmailDetector;
 pub use phone::PhoneDetector;
-pub use dni::DniDetector;
+pub use spanish_id::SpanishIdDetector;
 pub use iban::IbanDetector;
 pub use credit_card::CreditCardDetector;
 pub use ssn::SsnDetector;
