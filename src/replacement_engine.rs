@@ -58,7 +58,7 @@ impl ReplacementEngine {
                 Category::DesignedBy => "DESIGNED_BY".to_string(),
             };
             
-            let placeholder = format!("[{}_{}]", cat_name, counter);
+            let placeholder = format!("[{}_{:03}]", cat_name, counter);
             match_data.push((m, placeholder));
         }
         

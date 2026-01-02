@@ -199,6 +199,13 @@
             margin-top: 15px;
         }
 
+        button.json-toggle {
+            background: #6c757d;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
         .result-section {
             display: none;
             animation: fadeIn 0.5s;
@@ -249,6 +256,45 @@
             color: #667eea;
             font-weight: 700;
             font-size: 1.1em;
+        }
+
+        .category-list {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .category-item {
+            margin: 5px 0;
+            color: #555;
+            font-family: "Courier New", monospace;
+        }
+
+        .hash-box {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .json-container {
+            display: none;
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .json-container.show {
+            display: block;
         }
 
         .loading {
@@ -375,10 +421,8 @@
 
                 if (!res.ok) throw new Error('Error al procesar');
 
-                // Ahora recibimos JSON con base64 y estadísticas
                 const data = await res.json();
 
-                // Mostrar resultados con estadísticas
                 document.getElementById('results-file').innerHTML = `
                     <div class="result-box">
                         <div class="result-title">✅ Documento Procesado</div>
@@ -408,7 +452,6 @@
         }
 
         function downloadFile(base64Data, filename) {
-            // Convertir base64 a blob
             const byteCharacters = atob(base64Data);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
@@ -419,11 +462,9 @@
                 type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             });
 
-            // Crear link de descarga
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            // Asegurar que siempre tiene extensión .docx
             const baseName = filename.replace(/\.docx$/i, '');
             a.download = baseName + '.docx';
             document.body.appendChild(a);
@@ -432,18 +473,65 @@
             URL.revokeObjectURL(url);
         }
 
+        function toggleJson(id) {
+            const container = document.getElementById(id);
+            container.classList.toggle('show');
+        }
+
+        // Procesar respuesta HTMX con audit report mejorado
         document.body.addEventListener('htmx:beforeSwap', function (evt) {
             if (evt.detail.xhr.status === 200) {
                 const data = JSON.parse(evt.detail.xhr.responseText);
+
+                // Construir breakdown por categoría
+                let categoryHtml = '';
+                const categories = data.audit_report.statistics.matches_by_category;
+                for (const [cat, count] of Object.entries(categories)) {
+                    categoryHtml += `<div class="category-item">• ${cat}: ${count}</div>`;
+                }
+
+                // Truncar hashes
+                const inputHash = data.audit_report.input_hash.substring(0, 16) + '...';
+                const outputHash = data.hash.substring(0, 16) + '...';
+
+                // ID único para el JSON
+                const jsonId = 'json-' + Date.now();
+
                 evt.detail.serverResponse = `
                     <div class="result-box">
                         <div class="result-title">✅ Texto Anonimizado</div>
-                        <pre style="white-space: pre-wrap;">${data.anonymized_text}</pre>
+                        <pre style="white-space: pre-wrap; font-family: 'Courier New', monospace;">${data.anonymized_text}</pre>
                     </div>
                     <div class="result-box">
-                        <div class="result-title">📊 Estadísticas</div>
-                        <p>Detecciones: <span class="highlight">${data.audit_report.statistics.total_matches}</span></p>
-                        <p>Tiempo: <span class="highlight">${data.audit_report.statistics.processing_time_ms}ms</span> ⚡</p>
+                        <div class="result-title">📊 Audit Report</div>
+                        
+                        <p style="font-size: 18px; color: #667eea; font-weight: 600; margin-bottom: 15px;">
+                            ✅ ${data.audit_report.statistics.total_matches} detecciones en ${data.audit_report.statistics.processing_time_ms}ms
+                        </p>
+
+                        <div style="margin: 20px 0;">
+                            <p style="font-weight: 600; margin-bottom: 10px;">🔍 Por categoría:</p>
+                            <div class="category-list">
+                                ${categoryHtml}
+                            </div>
+                        </div>
+
+                        <div style="margin: 20px 0;">
+                            <p style="font-weight: 600; margin-bottom: 10px;">🔐 Hashes:</p>
+                            <div style="margin-left: 10px;">
+                                <p style="margin: 5px 0; font-size: 14px;">Input:</p>
+                                <div class="hash-box">${inputHash}</div>
+                                <p style="margin: 5px 0; font-size: 14px;">Output:</p>
+                                <div class="hash-box">${outputHash}</div>
+                            </div>
+                        </div>
+
+                        <button class="json-toggle" onclick="toggleJson('${jsonId}')">
+                            📋 Ver JSON completo
+                        </button>
+                        <div id="${jsonId}" class="json-container">
+                            <pre>${JSON.stringify(data.audit_report, null, 2)}</pre>
+                        </div>
                     </div>
                 `;
                 document.getElementById('results-text').classList.add('show');
