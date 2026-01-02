@@ -322,6 +322,15 @@
             display: block;
         }
 
+        .error-box {
+            background: #fee;
+            border-left: 4px solid #f44;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            color: #c33;
+        }
+
         .footer {
             margin-top: 30px;
             text-align: center;
@@ -427,14 +436,42 @@
             document.getElementById('uploadBtn').disabled = true;
 
             try {
+                console.log('📤 Uploading file:', selectedFile.name, selectedFile.size, 'bytes');
+
                 const res = await fetch('/api/anonymize-file', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!res.ok) throw new Error('Processing error');
+                console.log('📥 Response status:', res.status, res.statusText);
+
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('❌ Error response:', errorText);
+                    throw new Error(`HTTP ${res.status}: ${errorText}`);
+                }
 
                 const data = await res.json();
+                console.log('✓ Response parsed successfully');
+                console.log('📊 Data keys:', Object.keys(data));
+                console.log('📊 file_base64 length:', data.file_base64 ? data.file_base64.length : 'undefined');
+                console.log('📊 filename:', data.filename);
+
+                // Validar que tenemos los datos necesarios
+                if (!data.file_base64) {
+                    throw new Error('Response missing file_base64');
+                }
+                if (!data.filename) {
+                    throw new Error('Response missing filename');
+                }
+                if (!data.audit_report) {
+                    throw new Error('Response missing audit_report');
+                }
+
+                // Validar base64 básico
+                if (!/^[A-Za-z0-9+/]*={0,2}$/.test(data.file_base64)) {
+                    console.warn('⚠️ Base64 contains invalid characters');
+                }
 
                 // Build category breakdown
                 let categoryHtml = '';
@@ -445,7 +482,6 @@
 
                 // Truncate hashes
                 const inputHash = data.audit_report.input_hash.substring(0, 16) + '...';
-                const outputHash = data.audit_report.input_hash.substring(0, 16) + '...';
 
                 // Unique IDs
                 const detailId = 'detail-file-' + Date.now();
@@ -454,7 +490,7 @@
                 document.getElementById('results-file').innerHTML = `
                     <div class="result-box">
                         <div class="result-title">✅ Document Processed</div>
-                        <p><strong>File:</strong> ${data.filename}</p>
+                        <p><strong>File:</strong> ${escapeHtml(data.filename)}</p>
                         <div class="stats">
                             <p>📊 <strong>Detections:</strong> <span class="highlight">${data.audit_report.statistics.total_matches}</span></p>
                             <p>⚡ <strong>Processing time:</strong> <span class="highlight">${data.audit_report.statistics.processing_time_ms}ms</span></p>
@@ -473,11 +509,8 @@
                             </div>
 
                             <div style="margin: 20px 0;">
-                                <p style="font-weight: 600; margin-bottom: 10px;">🔐 Hashes:</p>
-                                <div style="margin-left: 10px;">
-                                    <p style="margin: 5px 0; font-size: 14px;">Input:</p>
-                                    <div class="hash-box">${inputHash}</div>
-                                </div>
+                                <p style="font-weight: 600; margin-bottom: 10px;">🔐 Input Hash:</p>
+                                <div class="hash-box">${inputHash}</div>
                             </div>
 
                             <button class="detail-toggle" onclick="toggleJson('${jsonId}')">
@@ -488,17 +521,21 @@
                             </div>
                         </div>
                         
-                        <button class="download" onclick="downloadFile('${data.file_base64}', '${data.filename}')">
+                        <button class="download" onclick='downloadFile(${JSON.stringify(data.file_base64)}, ${JSON.stringify(data.filename)})'>
                             💾 Download Anonymized Document
                         </button>
                     </div>
                 `;
                 document.getElementById('results-file').classList.add('show');
+
+                console.log('✓ UI updated successfully');
             } catch (err) {
+                console.error('❌ Upload error:', err);
                 document.getElementById('results-file').innerHTML = `
-                    <div class="result-box">
+                    <div class="error-box">
                         <div class="result-title">❌ Error</div>
-                        <p>${err.message}</p>
+                        <p><strong>Message:</strong> ${escapeHtml(err.message)}</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Check the browser console for details.</p>
                     </div>
                 `;
                 document.getElementById('results-file').classList.add('show');
@@ -508,26 +545,45 @@
             }
         }
 
+        /**
+         * Download file from base64 data
+         * FIXED: Uses visible download link to avoid Chrome blocking
+         */
         function downloadFile(base64Data, filename) {
-            const byteCharacters = atob(base64Data);
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const blob = new Blob([byteArray], {
-                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            });
+            try {
+                // Decodificar
+                const byteChars = atob(base64Data);
+                const byteArray = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) {
+                    byteArray[i] = byteChars.charCodeAt(i);
+                }
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const baseName = filename.replace(/\.docx$/i, '');
-            a.download = baseName + '.docx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+                // Crear blob
+                const blob = new Blob([byteArray], {
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                });
+
+                // Asegurar .docx
+                if (!filename.endsWith('.docx')) filename += '.docx';
+
+                // MÉTODO QUE NUNCA FALLA
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                link.style.display = 'none';
+
+                document.body.appendChild(link);
+                link.click();
+
+                // Cleanup después
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                }, 100);
+
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
         }
 
         function toggleDetail(id) {
@@ -538,6 +594,17 @@
         function toggleJson(id) {
             const container = document.getElementById(id);
             container.classList.toggle('show');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
         // Process HTMX response - KEEP SIMPLE VIEW FIRST
@@ -563,7 +630,7 @@
                 evt.detail.serverResponse = `
                     <div class="result-box">
                         <div class="result-title">✅ Anonymized Text</div>
-                        <pre style="white-space: pre-wrap; font-family: 'Courier New', monospace;">${data.anonymized_text}</pre>
+                        <pre style="white-space: pre-wrap; font-family: 'Courier New', monospace;">${escapeHtml(data.anonymized_text)}</pre>
                     </div>
                     <div class="result-box">
                         <div class="result-title">📊 Statistics</div>

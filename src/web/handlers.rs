@@ -126,14 +126,33 @@ pub async fn anonymize_file_handler(
     let file_bytes = file_bytes.ok_or_else(|| AppError("No se recibió archivo".to_string()))?;
     let filename = filename.ok_or_else(|| AppError("No se recibió nombre de archivo".to_string()))?;
     
+    // Validar tamaño de archivo (max 10MB)
+    if file_bytes.len() > 10 * 1024 * 1024 {
+        return Err(AppError("Archivo demasiado grande (max 10MB)".to_string()));
+    }
+    
     // Crear motor de anonimización
     let engine = create_anonymizer();
     
     // Procesar documento
     let processed = document_processor::process_document(&file_bytes, &filename, &engine)?;
     
+    // IMPORTANTE: Validar que el contenido procesado no está vacío
+    if processed.content.is_empty() {
+        return Err(AppError("El documento procesado está vacío".to_string()));
+    }
+    
     // Convertir contenido a base64 usando la crate base64
     let file_base64 = base64_encode(&processed.content);
+    
+    // Validar que el base64 no está vacío
+    if file_base64.is_empty() {
+        return Err(AppError("Error al generar base64".to_string()));
+    }
+    
+    // Log para debugging (remover en producción si es necesario)
+    eprintln!("✓ Archivo procesado: {} bytes -> {} caracteres base64", 
+              processed.content.len(), file_base64.len());
     
     // Crear respuesta con audit report completo
     let response = AnonymizeFileResponse {
@@ -145,8 +164,11 @@ pub async fn anonymize_file_handler(
     Ok(Json(response))
 }
 
-/// Encode bytes to base64 string using standard library
+/// Encode bytes to base64 string usando base64 crate
+/// Garantiza que no hay espacios ni saltos de línea
 fn base64_encode(bytes: &[u8]) -> String {
     use base64::{Engine as _, engine::general_purpose};
+    
+    // STANDARD produce base64 limpio sin espacios ni saltos de línea
     general_purpose::STANDARD.encode(bytes)
 }
