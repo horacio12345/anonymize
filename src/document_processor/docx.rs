@@ -44,6 +44,7 @@ pub fn process_docx(
         content: buffer,
         content_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document".to_string(),
         filename: new_filename,
+        audit_report: output.report,
     })
 }
 

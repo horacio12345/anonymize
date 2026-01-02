@@ -23,3 +23,6 @@ tower-http = { version = "0.5", features = ["fs", "cors"] }
 
 # Document processing (DOCX only)
 docx-rs = "0.4"
+
+# Base64 encoding
+base64 = "0.22"

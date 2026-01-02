@@ -35,14 +35,7 @@ pub struct AnonymizeResponse {
 pub struct AnonymizeFileResponse {
     pub file_base64: String,
     pub filename: String,
-    pub statistics: FileStatistics,
-}
-
-/// Estadísticas simplificadas para archivos
-#[derive(Serialize)]
-pub struct FileStatistics {
-    pub total_detections: usize,
-    pub processing_time_ms: u64,
+    pub audit_report: AuditReport,
 }
 
 /// Error personalizado para respuestas HTTP
@@ -112,10 +105,6 @@ pub async fn anonymize_handler(
 pub async fn anonymize_file_handler(
     mut multipart: Multipart,
 ) -> Result<Json<AnonymizeFileResponse>, AppError> {
-    use std::time::Instant;
-    
-    let start = Instant::now();
-    
     // Extraer archivo del multipart
     let mut file_bytes: Option<Vec<u8>> = None;
     let mut filename: Option<String> = None;
@@ -143,69 +132,21 @@ pub async fn anonymize_file_handler(
     // Procesar documento
     let processed = document_processor::process_document(&file_bytes, &filename, &engine)?;
     
-    // Calcular tiempo de procesamiento
-    let processing_time = start.elapsed().as_millis() as u64;
-    
-    // Convertir contenido a base64
+    // Convertir contenido a base64 usando la crate base64
     let file_base64 = base64_encode(&processed.content);
     
-    // Crear respuesta con estadísticas
+    // Crear respuesta con audit report completo
     let response = AnonymizeFileResponse {
         file_base64,
         filename: processed.filename,
-        statistics: FileStatistics {
-            total_detections: 0,  // TODO: Extraer del audit report si está disponible
-            processing_time_ms: processing_time,
-        },
+        audit_report: processed.audit_report,
     };
     
     Ok(Json(response))
 }
 
-/// Encode bytes to base64 string
+/// Encode bytes to base64 string using standard library
 fn base64_encode(bytes: &[u8]) -> String {
-    use std::fmt::Write;
-    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    
-    let mut result = String::with_capacity((bytes.len() + 2) / 3 * 4);
-    let mut i = 0;
-    
-    while i + 2 < bytes.len() {
-        let b1 = bytes[i];
-        let b2 = bytes[i + 1];
-        let b3 = bytes[i + 2];
-        
-        let _ = write!(result, "{}{}{}{}",
-            CHARSET[(b1 >> 2) as usize] as char,
-            CHARSET[(((b1 & 0x03) << 4) | (b2 >> 4)) as usize] as char,
-            CHARSET[(((b2 & 0x0F) << 2) | (b3 >> 6)) as usize] as char,
-            CHARSET[(b3 & 0x3F) as usize] as char,
-        );
-        
-        i += 3;
-    }
-    
-    // Handle remaining bytes
-    if i < bytes.len() {
-        let b1 = bytes[i];
-        let _ = write!(result, "{}{}", 
-            CHARSET[(b1 >> 2) as usize] as char,
-            CHARSET[((b1 & 0x03) << 4) as usize] as char,
-        );
-        
-        if i + 1 < bytes.len() {
-            let b2 = bytes[i + 1];
-            let _ = write!(result, "{}",
-                CHARSET[(((b1 & 0x03) << 4) | (b2 >> 4)) as usize] as char,
-            );
-            let _ = write!(result, "{}",
-                CHARSET[((b2 & 0x0F) << 2) as usize] as char,
-            );
-        } else {
-            result.push('=');
-        }
-        result.push('=');
-    }
-    
-    result
+    use base64::{Engine as _, engine::general_purpose};
+    general_purpose::STANDARD.encode(bytes)
 }

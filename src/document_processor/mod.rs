@@ -2,7 +2,7 @@
 
 pub mod docx;
 
-use crate::Result;
+use crate::{Result, AuditReport};
 
 /// Tipo de documento detectado
 #[derive(Debug, Clone, Copy)]
@@ -27,6 +27,7 @@ pub struct ProcessedDocument {
     pub content: Vec<u8>,
     pub content_type: String,
     pub filename: String,
+    pub audit_report: AuditReport,
 }
 
 /// Procesar documento según tipo

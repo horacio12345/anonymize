@@ -436,14 +436,58 @@
 
                 const data = await res.json();
 
+                // Build category breakdown
+                let categoryHtml = '';
+                const categories = data.audit_report.statistics.matches_by_category;
+                for (const [cat, count] of Object.entries(categories)) {
+                    categoryHtml += `<div class="category-item">• ${cat}: ${count}</div>`;
+                }
+
+                // Truncate hashes
+                const inputHash = data.audit_report.input_hash.substring(0, 16) + '...';
+                const outputHash = data.audit_report.input_hash.substring(0, 16) + '...';
+
+                // Unique IDs
+                const detailId = 'detail-file-' + Date.now();
+                const jsonId = 'json-file-' + Date.now();
+
                 document.getElementById('results-file').innerHTML = `
                     <div class="result-box">
                         <div class="result-title">✅ Document Processed</div>
                         <p><strong>File:</strong> ${data.filename}</p>
                         <div class="stats">
-                            <p>📊 <strong>Detections:</strong> <span class="highlight">${data.statistics.total_detections}</span></p>
-                            <p>⚡ <strong>Processing time:</strong> <span class="highlight">${data.statistics.processing_time_ms}ms</span></p>
+                            <p>📊 <strong>Detections:</strong> <span class="highlight">${data.audit_report.statistics.total_matches}</span></p>
+                            <p>⚡ <strong>Processing time:</strong> <span class="highlight">${data.audit_report.statistics.processing_time_ms}ms</span></p>
                         </div>
+                        
+                        <button class="detail-toggle" onclick="toggleDetail('${detailId}')">
+                            📋 View full details
+                        </button>
+
+                        <div id="${detailId}" class="detail-container">
+                            <div style="margin: 20px 0;">
+                                <p style="font-weight: 600; margin-bottom: 10px;">🔍 By category:</p>
+                                <div class="category-list">
+                                    ${categoryHtml}
+                                </div>
+                            </div>
+
+                            <div style="margin: 20px 0;">
+                                <p style="font-weight: 600; margin-bottom: 10px;">🔐 Hashes:</p>
+                                <div style="margin-left: 10px;">
+                                    <p style="margin: 5px 0; font-size: 14px;">Input:</p>
+                                    <div class="hash-box">${inputHash}</div>
+                                </div>
+                            </div>
+
+                            <button class="detail-toggle" onclick="toggleJson('${jsonId}')">
+                                📋 View full JSON
+                            </button>
+                            <div id="${jsonId}" class="json-container">
+                                <pre>${JSON.stringify(data.audit_report, null, 2)}</pre>
+                            </div>
+                        </div>
+                        
                         <button class="download" onclick="downloadFile('${data.file_base64}', '${data.filename}')">
                             💾 Download Anonymized Document
                         </button>
