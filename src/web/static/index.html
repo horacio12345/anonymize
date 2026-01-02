@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymize - Anonimización Determinista</title>
+    <title>Anonymize - Deterministic Anonymization</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <style>
         * {
@@ -199,11 +199,11 @@
             margin-top: 15px;
         }
 
-        button.json-toggle {
+        button.detail-toggle {
             background: #6c757d;
             padding: 10px 20px;
             font-size: 14px;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .result-section {
@@ -256,6 +256,19 @@
             color: #667eea;
             font-weight: 700;
             font-size: 1.1em;
+        }
+
+        .detail-container {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .detail-container.show {
+            display: block;
         }
 
         .category-list {
@@ -321,36 +334,36 @@
 <body>
     <div class="container">
         <h1>🔒 Anonymize</h1>
-        <p class="subtitle">Anonimización determinista con detección formal</p>
+        <p class="subtitle">Deterministic anonymization with formal detection</p>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('text')">📝 Texto</button>
-            <button class="tab" onclick="switchTab('file')">📄 Archivo</button>
+            <button class="tab active" onclick="switchTab('text')">📝 Text</button>
+            <button class="tab" onclick="switchTab('file')">📄 File</button>
         </div>
 
-        <!-- TAB TEXTO -->
+        <!-- TAB TEXT -->
         <div id="tab-text" class="tab-content active">
             <form hx-post="/api/anonymize" hx-target="#results-text" hx-swap="innerHTML">
                 <div class="input-section">
-                    <label>Texto a anonimizar:</label>
-                    <textarea name="text" required placeholder="Pega aquí tu texto..."></textarea>
+                    <label>Text to anonymize:</label>
+                    <textarea name="text" required placeholder="Paste your text here..."></textarea>
                 </div>
                 <div class="button-container">
-                    <button type="submit">🚀 Anonimizar</button>
+                    <button type="submit">🚀 Anonymize</button>
                 </div>
-                <div class="loading">⏳ Procesando...</div>
+                <div class="loading">⏳ Processing...</div>
             </form>
             <div id="results-text" class="result-section"></div>
         </div>
 
-        <!-- TAB ARCHIVO -->
+        <!-- TAB FILE -->
         <div id="tab-file" class="tab-content">
             <div class="input-section">
-                <label>Archivo (.docx):</label>
+                <label>File (.docx):</label>
                 <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
                     <div class="upload-icon">📁</div>
-                    <div class="upload-text">Click para seleccionar</div>
-                    <div class="upload-hint">Formato: .docx (máx. 10MB)</div>
+                    <div class="upload-text">Click to select</div>
+                    <div class="upload-hint">Format: .docx (max. 10MB)</div>
                 </div>
                 <input type="file" id="fileInput" class="file-input" accept=".docx" onchange="handleFile(event)">
                 <div class="file-info" id="fileInfo">
@@ -358,15 +371,15 @@
                 </div>
             </div>
             <div class="button-container">
-                <button id="uploadBtn" onclick="uploadFile()" disabled>🚀 Anonimizar</button>
-                <button class="secondary" onclick="clearFile()">🗑️ Limpiar</button>
+                <button id="uploadBtn" onclick="uploadFile()" disabled>🚀 Anonymize</button>
+                <button class="secondary" onclick="clearFile()">🗑️ Clear</button>
             </div>
-            <div class="loading" id="fileLoading">⏳ Procesando documento...</div>
+            <div class="loading" id="fileLoading">⏳ Processing document...</div>
             <div id="results-file" class="result-section"></div>
         </div>
 
         <div class="footer">
-            <p>Motor de anonimización basado en reglas formales • Sin IA</p>
+            <p>Rule-based anonymization engine • No AI</p>
         </div>
     </div>
 
@@ -385,7 +398,7 @@
             if (!file) return;
 
             if (file.size > 10 * 1024 * 1024) {
-                alert('Archivo muy grande (máx. 10MB)');
+                alert('File too large (max. 10MB)');
                 return;
             }
 
@@ -419,20 +432,20 @@
                     body: formData
                 });
 
-                if (!res.ok) throw new Error('Error al procesar');
+                if (!res.ok) throw new Error('Processing error');
 
                 const data = await res.json();
 
                 document.getElementById('results-file').innerHTML = `
                     <div class="result-box">
-                        <div class="result-title">✅ Documento Procesado</div>
-                        <p><strong>Archivo:</strong> ${data.filename}</p>
+                        <div class="result-title">✅ Document Processed</div>
+                        <p><strong>File:</strong> ${data.filename}</p>
                         <div class="stats">
-                            <p>📊 <strong>Detecciones:</strong> <span class="highlight">${data.statistics.total_detections}</span></p>
-                            <p>⚡ <strong>Tiempo de procesamiento:</strong> <span class="highlight">${data.statistics.processing_time_ms}ms</span></p>
+                            <p>📊 <strong>Detections:</strong> <span class="highlight">${data.statistics.total_detections}</span></p>
+                            <p>⚡ <strong>Processing time:</strong> <span class="highlight">${data.statistics.processing_time_ms}ms</span></p>
                         </div>
                         <button class="download" onclick="downloadFile('${data.file_base64}', '${data.filename}')">
-                            💾 Descargar Documento Anonimizado
+                            💾 Download Anonymized Document
                         </button>
                     </div>
                 `;
@@ -473,64 +486,74 @@
             URL.revokeObjectURL(url);
         }
 
+        function toggleDetail(id) {
+            const container = document.getElementById(id);
+            container.classList.toggle('show');
+        }
+
         function toggleJson(id) {
             const container = document.getElementById(id);
             container.classList.toggle('show');
         }
 
-        // Procesar respuesta HTMX con audit report mejorado
+        // Process HTMX response - KEEP SIMPLE VIEW FIRST
         document.body.addEventListener('htmx:beforeSwap', function (evt) {
             if (evt.detail.xhr.status === 200) {
                 const data = JSON.parse(evt.detail.xhr.responseText);
 
-                // Construir breakdown por categoría
+                // Build category breakdown
                 let categoryHtml = '';
                 const categories = data.audit_report.statistics.matches_by_category;
                 for (const [cat, count] of Object.entries(categories)) {
                     categoryHtml += `<div class="category-item">• ${cat}: ${count}</div>`;
                 }
 
-                // Truncar hashes
+                // Truncate hashes
                 const inputHash = data.audit_report.input_hash.substring(0, 16) + '...';
                 const outputHash = data.hash.substring(0, 16) + '...';
 
-                // ID único para el JSON
+                // Unique IDs
+                const detailId = 'detail-' + Date.now();
                 const jsonId = 'json-' + Date.now();
 
                 evt.detail.serverResponse = `
                     <div class="result-box">
-                        <div class="result-title">✅ Texto Anonimizado</div>
+                        <div class="result-title">✅ Anonymized Text</div>
                         <pre style="white-space: pre-wrap; font-family: 'Courier New', monospace;">${data.anonymized_text}</pre>
                     </div>
                     <div class="result-box">
-                        <div class="result-title">📊 Audit Report</div>
+                        <div class="result-title">📊 Statistics</div>
+                        <p>Detections: <span class="highlight">${data.audit_report.statistics.total_matches}</span></p>
+                        <p>Time: <span class="highlight">${data.audit_report.statistics.processing_time_ms}ms</span> ⚡</p>
                         
-                        <p style="font-size: 18px; color: #667eea; font-weight: 600; margin-bottom: 15px;">
-                            ✅ ${data.audit_report.statistics.total_matches} detecciones en ${data.audit_report.statistics.processing_time_ms}ms
-                        </p>
-
-                        <div style="margin: 20px 0;">
-                            <p style="font-weight: 600; margin-bottom: 10px;">🔍 Por categoría:</p>
-                            <div class="category-list">
-                                ${categoryHtml}
-                            </div>
-                        </div>
-
-                        <div style="margin: 20px 0;">
-                            <p style="font-weight: 600; margin-bottom: 10px;">🔐 Hashes:</p>
-                            <div style="margin-left: 10px;">
-                                <p style="margin: 5px 0; font-size: 14px;">Input:</p>
-                                <div class="hash-box">${inputHash}</div>
-                                <p style="margin: 5px 0; font-size: 14px;">Output:</p>
-                                <div class="hash-box">${outputHash}</div>
-                            </div>
-                        </div>
-
-                        <button class="json-toggle" onclick="toggleJson('${jsonId}')">
-                            📋 Ver JSON completo
+                        <button class="detail-toggle" onclick="toggleDetail('${detailId}')">
+                            📋 View full details
                         </button>
-                        <div id="${jsonId}" class="json-container">
-                            <pre>${JSON.stringify(data.audit_report, null, 2)}</pre>
+
+                        <div id="${detailId}" class="detail-container">
+                            <div style="margin: 20px 0;">
+                                <p style="font-weight: 600; margin-bottom: 10px;">🔍 By category:</p>
+                                <div class="category-list">
+                                    ${categoryHtml}
+                                </div>
+                            </div>
+
+                            <div style="margin: 20px 0;">
+                                <p style="font-weight: 600; margin-bottom: 10px;">🔐 Hashes:</p>
+                                <div style="margin-left: 10px;">
+                                    <p style="margin: 5px 0; font-size: 14px;">Input:</p>
+                                    <div class="hash-box">${inputHash}</div>
+                                    <p style="margin: 5px 0; font-size: 14px;">Output:</p>
+                                    <div class="hash-box">${outputHash}</div>
+                                </div>
+                            </div>
+
+                            <button class="detail-toggle" onclick="toggleJson('${jsonId}')">
+                                📋 View full JSON
+                            </button>
+                            <div id="${jsonId}" class="json-container">
+                                <pre>${JSON.stringify(data.audit_report, null, 2)}</pre>
+                            </div>
                         </div>
                     </div>
                 `;
